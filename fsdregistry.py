@@ -13,6 +13,12 @@ class fsdregistry:
 			"localport":client.GetLocalPort(),
 			"remoteaddress":client.GetRemoteAddress(),
 			"remoteport":client.GetRemotePort(),
+			
+			"p2p_public_ip":client.GetP2PpublicIP(),
+			"p2p_public_port":client.GetP2PpublicPort(),
+			"p2p_private_ip":client.GetP2PprivateIP(),
+			"p2p_private_port":client.GetP2PprivatePort(),
+			
 			"fullname":client.GetFullName(),
 			"callsign":client.GetCallSign(),
 			"password":client.GetPassword(),
@@ -81,6 +87,17 @@ class fsdregistry:
 		return self.__Registry[userID]["remoteaddress"]
 	def GetRemotePort(self,userID):
 		return self.__Registry[userID]["remoteport"]
+		
+	#P2P Network information
+	def GetPublicIP(self,userID):
+		return self.__Registry[userID]["p2p_public_ip"]
+	def GetPublicPort(self,userID):
+		return self.__Registry[userID]["p2p_public_port"]
+	def GetPrivateIP(self,userID):
+		return self.__Registry[userID]["p2p_private_ip"]
+	def GetPrivatePort(self,userID):
+		return self.__Registry[userID]["p2p_private_port"]
+	
 
 			
 	

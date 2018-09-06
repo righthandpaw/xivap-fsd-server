@@ -67,11 +67,49 @@ class fsdclientworker(fsdnetwork):
 						#You get nothing
 						print()
 				
+				
+				#--===The P2P handshake===--
+				#The format of the P2P handshake looks something like this
+				#$CQAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
 				if regex.match('\\'+self.FSDprotocol.FSDInfoRequest(),command):
-					string = ("{}\r\n".format(sentences[0]))
-					client_socket.send(string.encode())
-					print("p2p->",string)
+					#check if the message came from ouselves
+					matches = regex.match('\\'+self.FSDprotocol.FSDInfoRequest()+'([A-Za-z0-9]+)',command)
+					myself = matches.group(1)
 					
+					print("me ->",myself)
+					print("p2p->",self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
+					#print(words)
+					
+					#if it came from us we update our registry
+					if self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()) == myself:
+						client = self.FSDapi.InfoRequest(words,client)
+						self.FSDregistry.UpdateRegistry(client)
+						
+					for otherUserID in self.FSDregistry.GetRegistryKeys():
+						#except ourselve's ofcourse
+						if otherUserID is not self.FSDregistry.GetMyID():
+						#check if we had sent a P2p handshake to the other clients
+							if otherUserID not in localRegistry:
+								#if not we need to send our handshake
+								
+								
+								p2pstring = ("{}{}:{}:P2P:2:PPOS1:{}:{}:{}:{}\r\n".format(
+									self.FSDprotocol.FSDInfoRequest(),
+									self.FSDregistry.GetCallSign(otherUserID),
+									self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),
+									self.FSDregistry.GetPublicIP(otherUserID),
+									self.FSDregistry.GetPublicPort(otherUserID),
+									self.FSDregistry.GetPrivateIP(otherUserID),
+									self.FSDregistry.GetPrivatePort(otherUserID)
+								))
+									
+								client_socket.send(p2pstring.encode())
+								print(p2pstring)
+								#we don't need to resend our stuff again to this user
+								localRegistry[otherUserID] = True
+				
+				
+				
 				
 				#Plane Params (Don't know what this is used for but it is called after it recieves the welcome message
 				
@@ -93,37 +131,7 @@ class fsdclientworker(fsdnetwork):
 					for otherUserID in self.FSDregistry.GetRegistryKeys():
 						#except ourselve's ofcourse
 						if otherUserID is not self.FSDregistry.GetMyID():
-							#check if we had sent a P2p handshake to the other clients
-							if otherUserID not in localRegistry:
-								#if not we need to send our handshake
-								#--===The P2P handshake===--
-								#The format of the P2P handshake looks something like this
-								#$CQDIROB11:NR1919:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
-								
-								string = ("{}{}:{}:P2P:2:PPOS1:{}:{}:{}:{}\r\n".format(
-									self.FSDprotocol.FSDInfoRequest(),
-									self.FSDregistry.GetCallSign(otherUserID),
-									self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),
-									self.FSDregistry.GetRemoteAddress(otherUserID),
-									self.FSDregistry.GetRemotePort(otherUserID),
-									self.FSDregistry.GetRemoteAddress(otherUserID),
-									self.FSDregistry.GetRemotePort(otherUserID)
-									#self.FSDregistry.GetLocalAddress(otherUserID),
-									#self.FSDregistry.GetLocalPort(otherUserID)
-								))
-									
-								#client_socket.send(string.encode())
-								
-								#we don't need to resend our stuff again to this user
-								localRegistry[otherUserID] = True
-								
-								#print(string)
-								
-								
-							#print("send this to user: ",otherUserID)
-							#print("Latitude: ",self.FSDregistry.GetLatitude(otherUserID))
-							#print("Longitude: ",self.FSDregistry.GetLongitude(otherUserID))
-							#print("")
+							
 							#format
 							#@S:DIROB11:1554:11:43.76123:-99.31627:1695:0:4261416526:-84
 
@@ -177,6 +185,9 @@ class fsdclientworker(fsdnetwork):
 							
 							#but whatever's were gona send this just to see what happens
 							client_socket.send(string.encode())
+							
+							
+							
 							
 
 		#close connection
