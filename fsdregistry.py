@@ -14,6 +14,7 @@ class fsdregistry:
 			"remoteaddress":client.GetRemoteAddress(),
 			"remoteport":client.GetRemotePort(),
 			
+			"p2p_method":client.GetP2Pmethod(),
 			"p2p_public_ip":client.GetP2PpublicIP(),
 			"p2p_public_port":client.GetP2PpublicPort(),
 			"p2p_private_ip":client.GetP2PprivateIP(),

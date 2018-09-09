@@ -84,7 +84,16 @@ class fsdclientworker(fsdnetwork):
 					if self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()) == myself:
 						client = self.FSDapi.InfoRequest(words,client)
 						self.FSDregistry.UpdateRegistry(client)
+					else:
+						#save the other users ID in the localRegistry
+						print("Other Username -> ",words[1])
+						print("Other Callsign ->", self.FSDregistry.GetCallSign(words[1]))
+						localRegistry[words[1]]="connected"
 						
+					#poll local registry 	
+					#for otherUserID in localRegistry
+					
+					'''
 					for otherUserID in self.FSDregistry.GetRegistryKeys():
 						#except ourselve's ofcourse
 						if otherUserID is not self.FSDregistry.GetMyID():
@@ -108,7 +117,7 @@ class fsdclientworker(fsdnetwork):
 								#we don't need to resend our stuff again to this user
 								localRegistry[otherUserID] = True
 				
-				
+					'''
 				
 				
 				#Plane Params (Don't know what this is used for but it is called after it recieves the welcome message
