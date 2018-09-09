@@ -135,6 +135,17 @@ class fsdclientworker(fsdnetwork):
 					#we update our client's position in the global registry
 					self.FSDregistry.UpdateRegistry(client)
 					
+					#do the p2p stuff here
+					print("Current pilots in localRegistry:")
+					
+					for otherUserID in localRegistry:
+						print(otherUserID+" -> "+self.FSDregistry.GetCallSign(otherUserID))
+					
+					print(localRegistry)
+					
+					######
+					
+					
 					#Next we need to have the server query the global registry 
 					#and send us everyone's position 
 					for otherUserID in self.FSDregistry.GetRegistryKeys():
