@@ -20,6 +20,7 @@ class fsdregistry:
 			"p2p_private_ip":client.GetP2PprivateIP(),
 			"p2p_private_port":client.GetP2PprivatePort(),
 			
+			"username":client.GetUserName(),
 			"fullname":client.GetFullName(),
 			"callsign":client.GetCallSign(),
 			"password":client.GetPassword(),
@@ -45,6 +46,8 @@ class fsdregistry:
 	#User/Pilot information
 	def GetMyID(self):
 		return self.__myID
+	def GetUserName(self):
+		return self.__Registry[userID]["username"]
 	def GetCallSign(self,userID):
 		return self.__Registry[userID]["callsign"]
 	def GetRating(self,userID):
@@ -90,13 +93,15 @@ class fsdregistry:
 		return self.__Registry[userID]["remoteport"]
 		
 	#P2P Network information
-	def GetPublicIP(self,userID):
+	def GetP2Pmethod(self,userID):
+		return self.__Registry[userID]["p2p_method"]
+	def GetP2PpublicIP(self,userID):
 		return self.__Registry[userID]["p2p_public_ip"]
-	def GetPublicPort(self,userID):
+	def GetP2PpublicPort(self,userID):
 		return self.__Registry[userID]["p2p_public_port"]
-	def GetPrivateIP(self,userID):
+	def GetP2PprivateIP(self,userID):
 		return self.__Registry[userID]["p2p_private_ip"]
-	def GetPrivatePort(self,userID):
+	def GetP2PprivatePort(self,userID):
 		return self.__Registry[userID]["p2p_private_port"]
 	
 

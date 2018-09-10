@@ -57,7 +57,7 @@ class fsdclientworker(fsdnetwork):
 						
 						motds = {	"Python FSD Flight server\r\n",
 									"Based on Open XIVAP Protocol\r\n",
-									"\r\n",
+									" \r\n",
 									"Enjoy your flight!\r\n",
 								}
 						for motd in motds:
@@ -78,47 +78,17 @@ class fsdclientworker(fsdnetwork):
 					
 					print("me ->",myself)
 					print("p2p->",self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
-					#print(words)
-					
+										
 					#if it came from us we update our registry
 					if self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()) == myself:
 						client = self.FSDapi.InfoRequest(words,client)
 						self.FSDregistry.UpdateRegistry(client)
-					else:
-						#save the other users ID in the localRegistry
-						print("Other Username -> ",words[1])
-						print("Other Callsign ->", self.FSDregistry.GetCallSign(words[1]))
-						localRegistry[words[1]]="connected"
-						
-					#poll local registry 	
-					#for otherUserID in localRegistry
+						myusername = self.FSDregistry.GetMyID()
+						print(vars(client))
 					
-					'''
-					for otherUserID in self.FSDregistry.GetRegistryKeys():
-						#except ourselve's ofcourse
-						if otherUserID is not self.FSDregistry.GetMyID():
-						#check if we had sent a P2p handshake to the other clients
-							if otherUserID not in localRegistry:
-								#if not we need to send our handshake
-								
-								
-								p2pstring = ("{}{}:{}:P2P:2:PPOS1:{}:{}:{}:{}\r\n".format(
-									self.FSDprotocol.FSDInfoRequest(),
-									self.FSDregistry.GetCallSign(otherUserID),
-									self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),
-									self.FSDregistry.GetPublicIP(otherUserID),
-									self.FSDregistry.GetPublicPort(otherUserID),
-									self.FSDregistry.GetPrivateIP(otherUserID),
-									self.FSDregistry.GetPrivatePort(otherUserID)
-								))
-									
-								client_socket.send(p2pstring.encode())
-								print(p2pstring)
-								#we don't need to resend our stuff again to this user
-								localRegistry[otherUserID] = True
-				
-					'''
-				
+					print(localRegistry)
+					
+
 				
 				#Plane Params (Don't know what this is used for but it is called after it recieves the welcome message
 				
@@ -131,19 +101,36 @@ class fsdclientworker(fsdnetwork):
 				
 				if regex.match(self.FSDprotocol.FSDPilotPosition(),command):
 					client = self.FSDapi.PilotPosition(words,client)
-					
 					#we update our client's position in the global registry
 					self.FSDregistry.UpdateRegistry(client)
+					myusername = self.FSDregistry.GetMyID()
 					
 					#do the p2p stuff here
-					print("Current pilots in localRegistry:")
-					
 					for otherUserID in localRegistry:
-						print(otherUserID+" -> "+self.FSDregistry.GetCallSign(otherUserID))
-					
+						
+						p2pformat = ("{}{}:{}:P2P:{}:PPOS1:{}:{}:{}:{}\r\n".format(
+							self.FSDprotocol.FSDInfoRequest(),
+							self.FSDregistry.GetCallSign(otherUserID),
+							self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),
+							self.FSDregistry.GetP2Pmethod(myusername),
+							self.FSDregistry.GetP2PpublicIP(myusername),
+							self.FSDregistry.GetP2PpublicPort(myusername),
+							self.FSDregistry.GetP2PprivateIP(myusername),
+							self.FSDregistry.GetP2PprivatePort(myusername)
+						))
+						
+						
+						#send only if status is connected 
+						if localRegistry[otherUserID] is "connected":
+							print(p2pformat.encode())
+							client_socket.send(p2pformat.encode())
+							localRegistry[otherUserID] = "verified"
+							
 					print(localRegistry)
 					
-					######
+					
+						
+				
 					
 					
 					#Next we need to have the server query the global registry 
@@ -151,6 +138,11 @@ class fsdclientworker(fsdnetwork):
 					for otherUserID in self.FSDregistry.GetRegistryKeys():
 						#except ourselve's ofcourse
 						if otherUserID is not self.FSDregistry.GetMyID():
+							
+							##Register the other user on our localRegistry
+							if otherUserID is not localRegistry:
+								localRegistry[otherUserID]="connected"
+							
 							
 							#format
 							#@S:DIROB11:1554:11:43.76123:-99.31627:1695:0:4261416526:-84

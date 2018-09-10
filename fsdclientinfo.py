@@ -75,7 +75,7 @@ class fsdclientinfo:
 		self.__remoteaddress = remoteaddress
 		
 	def SetP2Pmethod(self,p2pmethod):
-		self.__p2pmethod(p2pmethod)
+		self.__p2pmethod = p2pmethod
 				
 	def SetP2PpublicIP(self,p2ppublicip):
 		self.__p2ppublicip = p2ppublicip
@@ -154,7 +154,7 @@ class fsdclientinfo:
 	def GetRemotePort(self):
 		return self.__remoteport
 	
-	def GetP2Pmethod(self)
+	def GetP2Pmethod(self):
 		return self.__p2pmethod
 	
 	def GetP2PpublicIP(self):
