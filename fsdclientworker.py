@@ -55,6 +55,7 @@ class fsdclientworker(fsdnetwork):
 					if client.GetVerification() == True:
 						self.FSDregistry.UpdateRegistry(client)
 						
+						
 						motds = {	"Python FSD Flight server\r\n",
 									"Based on Open XIVAP Protocol\r\n",
 									" \r\n",
@@ -63,6 +64,7 @@ class fsdclientworker(fsdnetwork):
 						for motd in motds:
 							string = ("#TMserver:{}:{}\r\n".format(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),motd)) 
 							client_socket.send(string.encode())
+							
 					else:
 						#You get nothing
 						print()
@@ -70,41 +72,16 @@ class fsdclientworker(fsdnetwork):
 				
 				#--===The P2P handshake===--
 				#The format of the P2P handshake looks something like this
+				#ourselves::theOtherPerson:ourPublicIp:ourPrivateIP
 				#$CQAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
 				if regex.match('\\'+self.FSDprotocol.FSDInfoRequest(),command):
-					#check if the message came from ouselves
-					matches = regex.match('\\'+self.FSDprotocol.FSDInfoRequest()+'([A-Za-z0-9]+)',command)
-					myself = matches.group(1)
-					
-					print("me ->",myself)
-					print("p2p->",self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
-										
-					#if it came from us we update our registry
-					if self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()) == myself:
-						client = self.FSDapi.InfoRequest(words,client)
-						self.FSDregistry.UpdateRegistry(client)
-						myusername = self.FSDregistry.GetMyID()
-						print(vars(client))
-					
-					print(localRegistry)
-					
-
-				
-				#Plane Params (Don't know what this is used for but it is called after it recieves the welcome message
-				
-				if regex.match(self.FSDprotocol.FSDPlaneParams(),command):
-					print(command);
-						
-				#Pilot Position
-				#example we recieve the following string the our client:
-				# @S:NR1919:2726:-1:43.76174:-99.31855:1684:0:4282384454:0
-				
-				if regex.match(self.FSDprotocol.FSDPilotPosition(),command):
-					client = self.FSDapi.PilotPosition(words,client)
-					#we update our client's position in the global registry
+					client = self.FSDapi.InfoRequest(words,client)
 					self.FSDregistry.UpdateRegistry(client)
-					myusername = self.FSDregistry.GetMyID()
 					
+					#store the otherperson's callsign and connection method
+					localRegistry[words[1]]=words[3]
+					
+					'''
 					#do the p2p stuff here
 					for otherUserID in localRegistry:
 						
@@ -127,9 +104,48 @@ class fsdclientworker(fsdnetwork):
 							localRegistry[otherUserID] = "verified"
 							
 					print(localRegistry)
+								##Register the other user on our localRegistry
+							if otherUserID not in localRegistry:
+								localRegistry[otherUserID]="connected"
+								#print(localRegistry)
+					'''						
 					
 					
+					
+
+				#Plane Params (Don't know what this is used for but it is called after it recieves the welcome message
+				
+				if regex.match(self.FSDprotocol.FSDPlaneParams(),command):
+					print(command);
 						
+				#Pilot Position
+				#example we recieve the following string the our client:
+				# @S:NR1919:2726:-1:43.76174:-99.31855:1684:0:4282384454:0
+				
+				if regex.match(self.FSDprotocol.FSDPilotPosition(),command):
+					client = self.FSDapi.PilotPosition(words,client)
+					#we update our client's position in the global registry
+					self.FSDregistry.UpdateRegistry(client)
+					
+					
+					print("{} -> {}".format(self.FSDregistry.GetMyID(),localRegistry))
+					for otherUserID in localRegistry:
+						
+						p2pformat = ("{}{}:{}:P2P:{}:PPOS1:{}:{}:{}:{}\r\n".format(
+							self.FSDprotocol.FSDInfoRequest(),
+							otherUserID,
+							self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),
+							
+							localRegistry[otherUserID],
+							self.FSDregistry.GetP2PpublicIP(self.FSDregistry.GetMyID()),
+							self.FSDregistry.GetP2PpublicPort(self.FSDregistry.GetMyID()),
+							self.FSDregistry.GetP2PprivateIP(self.FSDregistry.GetMyID()),
+							self.FSDregistry.GetP2PprivatePort(self.FSDregistry.GetMyID())
+						))
+						print(p2pformat.encode())
+						client_socket.send(p2pformat.encode())
+
+					
 				
 					
 					
@@ -139,10 +155,7 @@ class fsdclientworker(fsdnetwork):
 						#except ourselve's ofcourse
 						if otherUserID is not self.FSDregistry.GetMyID():
 							
-							##Register the other user on our localRegistry
-							if otherUserID is not localRegistry:
-								localRegistry[otherUserID]="connected"
-							
+
 							
 							#format
 							#@S:DIROB11:1554:11:43.76123:-99.31627:1695:0:4261416526:-84
