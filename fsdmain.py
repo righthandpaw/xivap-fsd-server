@@ -10,6 +10,7 @@ from fsdregistry import fsdregistry
 from fsdclientinfo import fsdclientinfo
 from fsdclientworker import fsdclientworker
 from fsdadminworker import fsdadminworker
+from fsdp2ppool import fsdp2ppool 
 
 class fsdmain:
 	
@@ -17,6 +18,7 @@ class fsdmain:
 		self.FSDregistry 	= fsdregistry()
 		self.FSDapi 		= fsdapi()
 		self.FSDprotocol 	= fsdprotocol()
+		self.FSDp2ppool		= fsdp2ppool()
 		print("Starting Server")
 		
 		#server code	
@@ -29,10 +31,10 @@ class fsdmain:
 		
 		#start FSD server
 		
-		server_thread = threading.Thread(target=fsdclientworker, args=(self.FSDregistry,self.FSDapi,self.FSDprotocol,fsd_bind_ip,fsd_bind_port,"FSD",))
+		server_thread = threading.Thread(target=fsdclientworker, args=(self.FSDregistry,self.FSDapi,self.FSDprotocol,self.FSDp2ppool,fsd_bind_ip,fsd_bind_port,"FSD",))
 		server_thread.start()
 		
 		
-		admin_thread = threading.Thread(target=fsdadminworker, args=(self.FSDregistry,self.FSDapi,self.FSDprotocol,adm_bind_ip,adm_bind_port,"Admin",))
+		admin_thread = threading.Thread(target=fsdadminworker, args=(self.FSDregistry,self.FSDapi,self.FSDprotocol,self.FSDp2ppool,adm_bind_ip,adm_bind_port,"Admin",))
 		admin_thread.start()
 

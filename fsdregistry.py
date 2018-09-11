@@ -46,8 +46,6 @@ class fsdregistry:
 	#User/Pilot information
 	def GetMyID(self):
 		return self.__myID
-	def GetUserName(self):
-		return self.__Registry[userID]["username"]
 	def GetCallSign(self,userID):
 		return self.__Registry[userID]["callsign"]
 	def GetRating(self,userID):
