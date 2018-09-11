@@ -3,7 +3,7 @@ import socket
 import threading
 
 class fsdnetwork:
-	def __init__(self,FSDregistry,FSDapi,FSDprotocol,bind_ip,bind_port,worker_type):
+	def __init__(self,FSDregistry,FSDapi,FSDprotocol,FSDp2ppool,bind_ip,bind_port,worker_type):
 
 
 		self.bufferSize		= 1024

@@ -6,6 +6,13 @@ class fsdclientinfo:
 					localport		="",
 					remoteaddress 	="",
 					remoteport		="",
+				
+					p2pmethod		="",
+					p2ppublicip		="",
+					p2ppublicport	="",
+					p2pprivateip	="",
+					p2pprivateport	="",
+					
 					fullname		="",
 					username		="",
 					password		="",
@@ -29,14 +36,17 @@ class fsdclientinfo:
 		self.__remoteaddress	=	remoteaddress
 		self.__remoteport		=	remoteport
 		
-		self.__fullname		=	fullname
-		self.__username		=	username
-		self.__password		=	password
-		self.__airplane		=	airplane
+		self.__p2pmethod		=	p2pmethod
+		self.__p2ppublicip		=	p2ppublicip
+		self.__p2ppublicport	=	p2ppublicport
+		self.__p2pprivateip		=	p2pprivateip
+		self.__p2pprivateport	=	p2pprivateport
 		
-		# ident callsign transponder rating latitude longitude truealt speed pitchbankheading
-		#@N:N169J:1200:3:43.12345:-78.543:12000:120:3487239347:60
-		self.__ident			=	ident			#S,N,Y
+		self.__fullname			=	fullname
+		self.__username			=	username
+		self.__password			=	password
+		self.__airplane			=	airplane
+		self.__ident			=	ident
 		self.__transponder		=	transponder
 		self.__rating			=	rating
 		self.__latitude			=	latitude
@@ -64,9 +74,24 @@ class fsdclientinfo:
 	def SetRemoteAddress(self,remoteaddress):
 		self.__remoteaddress = remoteaddress
 		
+	def SetP2Pmethod(self,p2pmethod):
+		self.__p2pmethod = p2pmethod
+				
+	def SetP2PpublicIP(self,p2ppublicip):
+		self.__p2ppublicip = p2ppublicip
+	
+	def SetP2PpublicPort(self,p2ppublicport):
+		self.__p2ppublicport = p2ppublicport
+	
+	def SetP2PprivateIP(self,p2pprivateip):
+		self.__p2pprivateip = p2pprivateip
+		
+	def SetP2PprivatePort(self,p2pprivateport):
+		self.__p2pprivateport = p2pprivateport
+		
 	def SetRemotePort(self,remoteport):
 		self.__remoteport = remoteport	
-
+	
 	def SetFullName(self,fullname):
 		self.__fullname = fullname
 
@@ -128,7 +153,22 @@ class fsdclientinfo:
 		
 	def GetRemotePort(self):
 		return self.__remoteport
+	
+	def GetP2Pmethod(self):
+		return self.__p2pmethod
+	
+	def GetP2PpublicIP(self):
+		return self.__p2ppublicip
 		
+	def GetP2PpublicPort(self):
+		return self.__p2ppublicport
+		
+	def GetP2PprivateIP(self):
+		return self.__p2pprivateip
+		
+	def GetP2PprivatePort(self):
+		return self.__p2pprivateport
+	
 	def GetFullName(self):
 		return self.__fullname
 	

@@ -9,8 +9,8 @@ from fsdclientinfo import fsdclientinfo
 from fsdnetwork import fsdnetwork
 
 class fsdclientworker(fsdnetwork):
-	def __init__(self,FSDregistry,FSDapi,FSDprotocol,bind_ip,bind_port,worker_type):
-		fsdnetwork.__init__(self,FSDregistry,FSDapi,FSDprotocol,bind_ip,bind_port,worker_type)
+	def __init__(self,FSDregistry,FSDapi,FSDprotocol,FSDp2ppool,bind_ip,bind_port,worker_type):
+		fsdnetwork.__init__(self,FSDregistry,FSDapi,FSDprotocol,FSDp2ppool,bind_ip,bind_port,worker_type)
 		
 	def worker(self,client_socket):
 
@@ -55,26 +55,32 @@ class fsdclientworker(fsdnetwork):
 					if client.GetVerification() == True:
 						self.FSDregistry.UpdateRegistry(client)
 						
+						
 						motds = {	"Python FSD Flight server\r\n",
 									"Based on Open XIVAP Protocol\r\n",
-									"\r\n",
+									" \r\n",
 									"Enjoy your flight!\r\n",
 								}
 						for motd in motds:
 							string = ("#TMserver:{}:{}\r\n".format(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),motd)) 
 							client_socket.send(string.encode())
+							
 					else:
 						#You get nothing
 						print()
 				
+				
+				#--===The P2P handshake===--
+				#The format of the P2P handshake looks something like this
+				#ourselves::theOtherPerson:ourPublicIp:ourPrivateIP
+				#$CQAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
 				if regex.match('\\'+self.FSDprotocol.FSDInfoRequest(),command):
-					string = ("{}\r\n".format(sentences[0]))
-					client_socket.send(string.encode())
-					print("p2p->",string)
+					client = self.FSDapi.InfoRequest(words,client)
+					self.FSDregistry.UpdateRegistry(client)
+
 					
-				
-				#Plane Params (Don't know what this is used for but it is called after it recieves the welcome message
-				
+					
+				#Plane Params (Don't know what this is used for but it is called after it recieves the welcome message				
 				if regex.match(self.FSDprotocol.FSDPlaneParams(),command):
 					print(command);
 						
@@ -84,46 +90,15 @@ class fsdclientworker(fsdnetwork):
 				
 				if regex.match(self.FSDprotocol.FSDPilotPosition(),command):
 					client = self.FSDapi.PilotPosition(words,client)
-					
 					#we update our client's position in the global registry
 					self.FSDregistry.UpdateRegistry(client)
-					
+	
 					#Next we need to have the server query the global registry 
 					#and send us everyone's position 
 					for otherUserID in self.FSDregistry.GetRegistryKeys():
 						#except ourselve's ofcourse
 						if otherUserID is not self.FSDregistry.GetMyID():
-							#check if we had sent a P2p handshake to the other clients
-							if otherUserID not in localRegistry:
-								#if not we need to send our handshake
-								#--===The P2P handshake===--
-								#The format of the P2P handshake looks something like this
-								#$CQDIROB11:NR1919:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
-								
-								string = ("{}{}:{}:P2P:2:PPOS1:{}:{}:{}:{}\r\n".format(
-									self.FSDprotocol.FSDInfoRequest(),
-									self.FSDregistry.GetCallSign(otherUserID),
-									self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),
-									self.FSDregistry.GetRemoteAddress(otherUserID),
-									self.FSDregistry.GetRemotePort(otherUserID),
-									self.FSDregistry.GetRemoteAddress(otherUserID),
-									self.FSDregistry.GetRemotePort(otherUserID)
-									#self.FSDregistry.GetLocalAddress(otherUserID),
-									#self.FSDregistry.GetLocalPort(otherUserID)
-								))
-									
-								#client_socket.send(string.encode())
-								
-								#we don't need to resend our stuff again to this user
-								localRegistry[otherUserID] = True
-								
-								#print(string)
-								
-								
-							#print("send this to user: ",otherUserID)
-							#print("Latitude: ",self.FSDregistry.GetLatitude(otherUserID))
-							#print("Longitude: ",self.FSDregistry.GetLongitude(otherUserID))
-							#print("")
+
 							#format
 							#@S:DIROB11:1554:11:43.76123:-99.31627:1695:0:4261416526:-84
 
@@ -177,6 +152,9 @@ class fsdclientworker(fsdnetwork):
 							
 							#but whatever's were gona send this just to see what happens
 							client_socket.send(string.encode())
+							
+							
+							
 							
 
 		#close connection

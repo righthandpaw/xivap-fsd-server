@@ -9,8 +9,8 @@ from fsdclientinfo import fsdclientinfo
 from fsdnetwork import fsdnetwork
 
 class fsdadminworker(fsdnetwork):
-	def __init__(self,FSDregistry,FSDapi,FSDprotocol,bind_ip,bind_port,worker_type):
-		fsdnetwork.__init__(self,FSDregistry,FSDapi,FSDprotocol,bind_ip,bind_port,worker_type)
+	def __init__(self,FSDregistry,FSDapi,FSDprotocol,FSDp2ppool,bind_ip,bind_port,worker_type):
+		fsdnetwork.__init__(self,FSDregistry,FSDapi,FSDprotocol,FSDp2ppool,bind_ip,bind_port,worker_type)
 		
 	def worker(self,admin_socket):
 		
