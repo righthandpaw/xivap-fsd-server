@@ -75,9 +75,13 @@ class fsdclientworker(fsdnetwork):
 				#ourselves::theOtherPerson:ourPublicIp:ourPrivateIP
 				#$CQAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
 				if regex.match('\\'+self.FSDprotocol.FSDInfoRequest(),command):
-					client = self.FSDapi.InfoRequest(words,client)
+				
+					self.FSDp2ppool.AddRequests(words)
+					self.FSDp2ppool.GetRequests(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
+				
+					client = self.FSDapi.InfoRequest(words,client)	
 					self.FSDregistry.UpdateRegistry(client)
-
+					
 					
 					
 				#Plane Params (Don't know what this is used for but it is called after it recieves the welcome message				
