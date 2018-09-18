@@ -39,12 +39,37 @@ class tester():
 		w_thread = threading.Thread(target=self.watcher,args=('NR1918',))
 		w_thread.start()
 		
-	def watcher(self,callsign):
+		time.sleep(3)
 		
+		sentences = [
+					'$CQNR2009:NR1918:P2P:2:PPOS1:114.158.182.21:21870:127.0.0.1:29512',
+					'$CQNR2029:NR1918:P2P:2:PPOS1:114.158.182.21:21870:127.0.0.1:29512',
+					]
+		
+		for sentence in sentences:
+			self.FSDp2ppool.AddRequests(sentence.split(':'))
+		
+		
+		
+	def watcher(self,callsign):
+	
+		print("Give me all messages for Callsign - {}".format(callsign))
 		#run this in a loop 
-		print("Give me all messages to Callsign - {}".format(callsign))
-		print(self.FSDp2ppool.GetRequests(callsign))
-
+		
+		while True:
+			waiting = True
+			while waiting is True:
+				if self.FSDp2ppool.GetRequests(callsign) != {}:
+					waiting = False
+			
+			p2pclient = self.FSDp2ppool.GetRequests(callsign)
+			for key in p2pclient:
+				if p2pclient[key]['status'] == 'pending':
+					print("sending")
+					print(p2pclient[key])
+					self.FSDp2ppool.UpdateRequests(key)
+					print(p2pclient[key])
+		
 		
 		
 	def workerB(self):
@@ -61,6 +86,15 @@ class tester():
 		watcher = threading.Thread(target=self.watcher,args=('NR1919',))
 		watcher.start()
 		
+		time.sleep(3)
+		
+		sentences = [
+					'$CQNR1919:NR1918:P2P:2:PPOS1:114.158.182.21:21870:127.0.0.1:29512',
+					'$CQNR1930:NR1918:P2P:2:PPOS1:114.158.182.21:21870:127.0.0.1:29512',
+					]
+		
+		for sentence in sentences:
+			self.FSDp2ppool.AddRequests(sentence.split(':'))
 		
 		
 		

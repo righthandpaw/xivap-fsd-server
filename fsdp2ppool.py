@@ -33,15 +33,18 @@ class fsdp2ppool():
 			'privateip':privateip,
 			'privateport':privateport,
 			'toCallsign':toCallsign,
+			'status':'pending'
 		}
 
 		
 	def GetRequests(self,toCallsign):
-		
+		clientPool = self.__clientPool.copy()
 		local = {}
-		for key in self.__clientPool.keys():
-			if toCallsign in self.__clientPool[key]['toCallsign']:
-				local[key]= self.__clientPool[key]
+		for key in clientPool.keys():
+			if toCallsign in clientPool[key]['toCallsign']:
+				local[key]= clientPool[key]
 		return local	
-			
-			
+	
+	def UpdateRequests(self,key):
+		self.__clientPool[key]['status']='sent'
+		

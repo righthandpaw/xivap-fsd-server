@@ -11,7 +11,37 @@ from fsdnetwork import fsdnetwork
 class fsdclientworker(fsdnetwork):
 	def __init__(self,FSDregistry,FSDapi,FSDprotocol,FSDp2ppool,bind_ip,bind_port,worker_type):
 		fsdnetwork.__init__(self,FSDregistry,FSDapi,FSDprotocol,FSDp2ppool,bind_ip,bind_port,worker_type)
-		
+	
+	def watcher(self,callsign,client_socket):
+		#poll for p2p handshakes
+		while True:
+			waiting = True
+			while waiting is True:
+				if self.FSDp2ppool.GetRequests(callsign) != {}:
+					waiting = False
+			
+			p2pclient = self.FSDp2ppool.GetRequests(callsign)
+			for key in p2pclient:
+				if p2pclient[key]['status'] == 'pending':
+					print("sending")
+					print(p2pclient[key])
+					#$CQAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
+					p2pstring = ("{}{}:{}:P2P:{}:PPOS1:{}:{}:{}:{}\r\n".format(
+						self.FSDprotocol.FSDInfoRequest(),
+						p2pclient[key]['fromCallsign'],
+						p2pclient[key]['toCallsign'],
+						p2pclient[key]['mode'],
+						p2pclient[key]['publicip'],
+						p2pclient[key]['publicport'],
+						p2pclient[key]['privateip'],
+						p2pclient[key]['privateport']
+					))
+					
+					client_socket.send(p2pstring.encode())
+					self.FSDp2ppool.UpdateRequests(key)
+					print(p2pclient[key])
+
+	
 	def worker(self,client_socket):
 
 		regex = re
@@ -64,7 +94,15 @@ class fsdclientworker(fsdnetwork):
 						for motd in motds:
 							string = ("#TMserver:{}:{}\r\n".format(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),motd)) 
 							client_socket.send(string.encode())
-							
+						
+						#on sucessful connection launch a thread to poll for new client 
+						p2phandshake_thread = threading.Thread(
+							target=self.watcher,
+							args=(	self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),
+									client_socket,
+									))
+						p2phandshake_thread.start()
+						
 					else:
 						#You get nothing
 						print()
@@ -77,8 +115,7 @@ class fsdclientworker(fsdnetwork):
 				if regex.match('\\'+self.FSDprotocol.FSDInfoRequest(),command):
 				
 					self.FSDp2ppool.AddRequests(words)
-					self.FSDp2ppool.GetRequests(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
-				
+					#self.FSDp2ppool.GetRequests(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
 					client = self.FSDapi.InfoRequest(words,client)	
 					self.FSDregistry.UpdateRegistry(client)
 					
