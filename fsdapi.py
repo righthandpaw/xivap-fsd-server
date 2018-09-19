@@ -96,6 +96,18 @@ class fsdapi:
 		
 		return client
 		
+	def InfoReply(self,words,client):
+		#$CRAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
+		print("InforReply ",words)
+		client.SetP2Pmethod(words[3])
+		client.SetP2PpublicIP(words[5])
+		client.SetP2PpublicPort(words[6])
+		client.SetP2PprivateIP(words[7])
+		client.SetP2PprivatePort(words[8])
+		
+		return client	
+		
+		
 		
 
 		

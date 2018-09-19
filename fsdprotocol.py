@@ -8,6 +8,7 @@ class fsdprotocol(object):
 		self.__fsdplaneparams	=	"-MD" #Legacy plane parameters
 		self.__fsdpilotpos		=	"@"
 		self.__fsdinforequest	=	"$CQ" #P2P request
+		self.__fsdinforeply		=	"$CR" #P2P reply
 		
 
 	def FSDAddPilot(self):
@@ -27,3 +28,6 @@ class fsdprotocol(object):
 
 	def FSDInfoRequest(self):
 		return self.__fsdinforequest
+		
+	def FSDInfoReply(self):
+		return self.__fsdinforeply	

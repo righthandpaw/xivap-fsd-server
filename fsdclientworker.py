@@ -27,7 +27,7 @@ class fsdclientworker(fsdnetwork):
 					print(p2pclient[key])
 					#$CQAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
 					p2pstring = ("{}{}:{}:P2P:{}:PPOS1:{}:{}:{}:{}\r\n".format(
-						self.FSDprotocol.FSDInfoRequest(),
+						p2pclient[key]['requesttype'],
 						p2pclient[key]['fromCallsign'],
 						p2pclient[key]['toCallsign'],
 						p2pclient[key]['mode'],
@@ -112,13 +112,18 @@ class fsdclientworker(fsdnetwork):
 				#The format of the P2P handshake looks something like this
 				#ourselves::theOtherPerson:ourPublicIp:ourPrivateIP
 				#$CQAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
-				if regex.match('\\'+self.FSDprotocol.FSDInfoRequest(),command):
 				
+				#Request
+				if regex.match('\\'+self.FSDprotocol.FSDInfoRequest(),command):
 					self.FSDp2ppool.AddRequests(words)
-					#self.FSDp2ppool.GetRequests(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
 					client = self.FSDapi.InfoRequest(words,client)	
 					self.FSDregistry.UpdateRegistry(client)
-					
+				#Reply
+				if regex.match('\\'+self.FSDprotocol.FSDInfoReply(),command):
+					self.FSDp2ppool.AddRequests(words)
+					client = self.FSDapi.InfoReply(words,client)	
+					self.FSDregistry.UpdateRegistry(client)
+				
 					
 					
 				#Plane Params (Don't know what this is used for but it is called after it recieves the welcome message				
