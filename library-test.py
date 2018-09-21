@@ -41,14 +41,16 @@ class tester():
 		for sentence in sentences:
 			self.FSDp2ppool.AddRequests(sentence.split(':'))
 		
+		#end the thread
+		w_thread.do_run = False 
 
 	def workerB(self):
 		
 
 		
 	
-		watcher = threading.Thread(target=self.watcher,args=('NR1919',))
-		watcher.start()
+		w_thread = threading.Thread(target=self.watcher,args=('NR1919',))
+		w_thread.start()
 
 		
 		sentences = [
@@ -61,12 +63,13 @@ class tester():
 		for sentence in sentences:
 			self.FSDp2ppool.AddRequests(sentence.split(':'))
 	
-
+		#end the thread
+		w_thread.do_run = False 
 
 	def workerC(self):
 		
-		watcher = threading.Thread(target=self.watcher,args=('NR1920',))
-		watcher.start()
+		w_thread = threading.Thread(target=self.watcher,args=('NR1920',))
+		w_thread.start()
 
 		
 		sentences = [
@@ -79,16 +82,19 @@ class tester():
 		for sentence in sentences:
 			self.FSDp2ppool.AddRequests(sentence.split(':'))
 
-
+		#end the thread
+		w_thread.do_run = False 
 	
 		
 	def watcher(self,callsign):
 	
 		
+		t = threading.currentThread()
 		
-		while True:
+		
+		while getattr(t, "do_run", True):
 			waiting = True
-			while waiting is True:
+			while waiting == True and getattr(t, "do_run", True):
 				if self.FSDp2ppool.GetRequests(callsign) != {}:
 					waiting = False
 			
