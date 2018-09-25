@@ -9,7 +9,6 @@ class fsdp2ppool():
 	
 	def __init__(self):
 		self.FSD			= fsdprotocol()
-		self.__counter		= 0
 		self.__clientPool 	= {}
 		self.td 			= threading.Condition()
 		self.count			= 0
@@ -32,27 +31,22 @@ class fsdp2ppool():
 		privateport 	= words[8]
 		key 			= ("{}{}").format(fromCallsign,toCallsign)
 		reversekey 		= ("{}{}").format(toCallsign,fromCallsign)
-		self.count 		= self.count+1
-		
 		doesExist		= False
 		
 		#check if the reverse key exists already
 		#if it does we need to check the Request
-		
-		print("Pass #",self.count)
-		print("does this key: {} exist?".format(reversekey))
+
 		if reversekey in self.__clientPool:
-			print("yes ... gotta check something")
 			if self.__clientPool[reversekey]['requesttype'] == requesttype:
-				print("We already sent this so we do not have to send again.")
+				#print("We already sent this so we do not have to send again.")
 				doesExist = True
 			else:
-				print("This does not exist so we can add it to the pile")
+				#print("This does not exist so we can add it to the pile")
 				doesExist = False
 			
 		else:
 			doesExist = False
-			print("no ... adding! ",key)
+			#print("no ... adding! ",key)
 			
 		if doesExist == False:	
 			self.__clientPool[key]={

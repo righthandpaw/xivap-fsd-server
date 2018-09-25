@@ -214,4 +214,5 @@ class fsdclientinfo:
 	def GetError(self):
 		return self.__error
 	
-	
+	#def Remove(self,callsign):
+	#	self.__callsign = ""

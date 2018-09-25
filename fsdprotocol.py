@@ -9,7 +9,7 @@ class fsdprotocol(object):
 		self.__fsdpilotpos		=	"@"
 		self.__fsdinforequest	=	"$CQ" #P2P request
 		self.__fsdinforeply		=	"$CR" #P2P reply
-		
+		self.__fsddelpilot		=	"#DP" #Delete Pilot
 
 	def FSDAddPilot(self):
 		return "^"+self.__fsdaddpilot
@@ -30,4 +30,7 @@ class fsdprotocol(object):
 		return self.__fsdinforequest
 		
 	def FSDInfoReply(self):
-		return self.__fsdinforeply	
+		return self.__fsdinforeply
+
+	def FSDDeletePilot(self):
+		return self.__fsddelpilot	
