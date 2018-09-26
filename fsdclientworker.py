@@ -16,11 +16,7 @@ class fsdclientworker(fsdnetwork):
 
 		regex = re
 		client=fsdclientinfo()
-		
-		laddress = client_socket.getsockname()
 		raddress = client_socket.getpeername()
-
-		localRegistry = {}
 		
 		i = 0
 		forever = True
@@ -42,12 +38,21 @@ class fsdclientworker(fsdnetwork):
 				
 				#Add a pilot
 				if regex.match(self.FSDprotocol.FSDAddPilot(),command):
-					client = self.FSDapi.AddPilot(words,laddress,raddress,client,self.FSDregistry)
+					client = self.FSDapi.AddPilot(words,raddress,client,self.FSDregistry)
 					if client.GetVerification() == True:
 						self.FSDregistry.UpdateRegistry(client)
 					else:
 						for error in client.GetError():
 							print(client.GetError()[error])
+							forever = False
+
+				#Delete pilot
+				if regex.match(self.FSDprotocol.FSDDeletePilot(),command):
+					#place message on announcement que
+					#self.FSDregistry.AddMessage()					
+					#remove the pilot from the pool
+					self.FSDregistry.UpdateRegistry(client,'deletePilot')
+					forever = False
 
 				#Plane Info				
 				if regex.match(self.FSDprotocol.FSDPlaneInfo(),command):
@@ -63,23 +68,22 @@ class fsdclientworker(fsdnetwork):
 								}
 						for motd in motds:
 							string = ("#TMserver:{}:{}\r\n".format(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),motd)) 
-							client_socket.send(string.encode())
-							
+							client_socket.send(string.encode())			
 					else:
 						#You get nothing
 						print()
 				
-				
-				#--===The P2P handshake===--
-				#The format of the P2P handshake looks something like this
-				#ourselves::theOtherPerson:ourPublicIp:ourPrivateIP
-				#$CQAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
-				if regex.match('\\'+self.FSDprotocol.FSDInfoRequest(),command):
-					client = self.FSDapi.InfoRequest(words,client)
-					self.FSDregistry.UpdateRegistry(client)
 
+				#P2PRequest
+				if regex.match('\\'+self.FSDprotocol.FSDInfoRequest(),command):
+					self.FSDp2ppool.AddRequests(words)
 					
+				#P2PReply
+				if regex.match('\\'+self.FSDprotocol.FSDInfoReply(),command):
+					self.FSDp2ppool.AddRequests(words)
 					
+				
+
 				#Plane Params (Don't know what this is used for but it is called after it recieves the welcome message				
 				if regex.match(self.FSDprotocol.FSDPlaneParams(),command):
 					print(command);
@@ -115,18 +119,6 @@ class fsdclientworker(fsdnetwork):
 									self.FSDregistry.GetGround(otherUserID)
 							))
 							
-							#we probably need to see if recived something like this first:
-							'''
-							-PRNR1919:DIROB11
-							-MRNR1919:DIROB11
-							$CRNR1919:DIROB11:P2P:2:PPOS1:127.36.130.77:23710:192.168.1.4:19561
-							'''
-							
-							#then we will need to send 
-							'''
-							-PDDIROB11:NR1919:KODIIND
-							-MDDIROB11:NR1919:
-							'''
 							#as a test we are just going to send this along to the client
 							sendPD = ("-PD{}:{}:{}\r\n".format(
 									self.FSDregistry.GetCallSign(otherUserID),
@@ -152,11 +144,38 @@ class fsdclientworker(fsdnetwork):
 							
 							#but whatever's were gona send this just to see what happens
 							client_socket.send(string.encode())
-							
-							
-							
-							
+					
+					##DO The p2p stuff here
 
-		#close connection
+					p2pclient = self.FSDp2ppool.GetRequests(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
+					for key in p2pclient:
+						if p2pclient[key]['status'] == 'pending':
+							#print("sending")
+							#print(p2pclient[key])
+							#$CQAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
+							p2pstring = ("{}{}:{}:P2P:{}:PPOS1:{}:{}:{}:{}\r\n".format(
+								p2pclient[key]['requesttype'],
+								p2pclient[key]['fromCallsign'],
+								p2pclient[key]['toCallsign'],
+								p2pclient[key]['mode'],
+								p2pclient[key]['publicip'],
+								p2pclient[key]['publicport'],
+								p2pclient[key]['privateip'],
+								p2pclient[key]['privateport']
+							))
+							
+							client_socket.send(p2pstring.encode())
+							self.FSDp2ppool.UpdateRequests(key)
+							#print(p2pclient[key])
+
+
+
+							
+							
+		#Remove pilot
+		#if client.GetError()[error]
+
+
+		#close connection		
 		client_socket.close()
 		#clean up the Registry	

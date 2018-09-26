@@ -13,15 +13,12 @@ class fsdapi:
 		self.FSDPilotPosition = FSD.FSDPilotPosition()
 		self.FSDInfoRequest	=	FSD.FSDInfoRequest()	
 	
-	def AddPilot(self,words,laddress,raddress,client,registry):
+	def AddPilot(self,words,raddress,client,registry):
 		
 		matches		= re.match(self.FSDAddPilot+'([A-Za-z0-9]+)',words[0])
 		callsign 	= matches.group(1)
 		username	= words[2]
 		password	= words[3]
-		
-		local_address	= laddress[0]
-		local_port		= laddress[1]
 		remote_address	= raddress[0]
 		remote_port		= raddress[1]
 
@@ -45,15 +42,13 @@ class fsdapi:
 	
 		client.SetUserName(username)
 		client.SetPassword(password)
-		client.SetLocalAddress(local_address)
-		client.SetLocalPort(local_port)
 		client.SetRemoteAddress(remote_address)
 		client.SetRemotePort(remote_port)
 		client.SetCallSign(callsign)
 		client.SetFullName(words[7])
 
 		return client
-		
+
 
 	def PlaneInfo(self,words,client):
 	
@@ -84,17 +79,8 @@ class fsdapi:
 		client.SetGround(words[9])
 		
 		return client
+
 		
-	def InfoRequest(self,words,client):
-		#$CQAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
-		print("InforRequest ",words)
-		client.SetP2Pmethod(words[3])
-		client.SetP2PpublicIP(words[5])
-		client.SetP2PpublicPort(words[6])
-		client.SetP2PprivateIP(words[7])
-		client.SetP2PprivatePort(words[8])
-		
-		return client
 		
 		
 

@@ -1,6 +1,7 @@
 import sys
 import socket
 import threading
+from threading import Lock, Thread
 
 class fsdnetwork:
 	def __init__(self,FSDregistry,FSDapi,FSDprotocol,FSDp2ppool,bind_ip,bind_port,worker_type):
@@ -10,6 +11,7 @@ class fsdnetwork:
 		self.FSDregistry	= FSDregistry
 		self.FSDapi 		= FSDapi
 		self.FSDprotocol	= FSDprotocol
+		self.FSDp2ppool		= FSDp2ppool
 
 		self.fsdserver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.fsdserver.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)

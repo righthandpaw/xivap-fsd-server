@@ -2,40 +2,38 @@ class fsdregistry:
 
 	def __init__(self):
 		self.__Registry = {}
+		self.__MessageQue = {}
 		
-		
-	def UpdateRegistry(self,client):
+	def UpdateRegistry(self,client,param='defualt'):
 		
 		self.__myID = client.GetUserName()
 		
-		self.__Registry[self.__myID]={
-			"localaddress":client.GetLocalAddress(),
-			"localport":client.GetLocalPort(),
-			"remoteaddress":client.GetRemoteAddress(),
-			"remoteport":client.GetRemotePort(),
-			
-			"p2p_method":client.GetP2Pmethod(),
-			"p2p_public_ip":client.GetP2PpublicIP(),
-			"p2p_public_port":client.GetP2PpublicPort(),
-			"p2p_private_ip":client.GetP2PprivateIP(),
-			"p2p_private_port":client.GetP2PprivatePort(),
-			
-			"username":client.GetUserName(),
-			"fullname":client.GetFullName(),
-			"callsign":client.GetCallSign(),
-			"password":client.GetPassword(),
-			"airplane":client.GetAirPlane(),
-			"ident":client.GetIdent(),
-			"transponder":client.GetTransponder(),
-			"rating":client.GetRating(),
-			"latitude":client.GetLatitude(),
-			"longitude":client.GetLongitude(),
-			"truealt":client.GetTrueAlt(),
-			"speed":client.GetSpeed(),
-			"pitchbankheading":client.GetPitchBankHeading(),
-			"ground":client.GetGround(),
-			}
-	
+		if param == 'defualt':
+			self.__Registry[self.__myID]={
+				"remoteaddress":client.GetRemoteAddress(),
+				"remoteport":client.GetRemotePort(),	
+				"username":client.GetUserName(),
+				"fullname":client.GetFullName(),
+				"callsign":client.GetCallSign(),
+				"password":client.GetPassword(),
+				"airplane":client.GetAirPlane(),
+				"ident":client.GetIdent(),
+				"transponder":client.GetTransponder(),
+				"rating":client.GetRating(),
+				"latitude":client.GetLatitude(),
+				"longitude":client.GetLongitude(),
+				"truealt":client.GetTrueAlt(),
+				"speed":client.GetSpeed(),
+				"pitchbankheading":client.GetPitchBankHeading(),
+				"ground":client.GetGround(),
+				}
+
+		if param == 'deletePilot':
+			self.__Registry.pop(self.__myID,None)
+
+	def AddMessage(self,callsign,message):
+		return message
+		
 	def GetRegistry(self):
 		return self.__Registry		
 	def GetRegistryKeys(self):
@@ -81,27 +79,11 @@ class fsdregistry:
 		
 		
 	#Network information information	
-	def GetLocalAddress(self,userID):
-		return self.__Registry[userID]["localaddress"]
-	def GetLocalPort(self,userID):
-		return self.__Registry[userID]["localport"]
 	def GetRemoteAddress(self,userID):
 		return self.__Registry[userID]["remoteaddress"]
 	def GetRemotePort(self,userID):
 		return self.__Registry[userID]["remoteport"]
-		
-	#P2P Network information
-	def GetP2Pmethod(self,userID):
-		return self.__Registry[userID]["p2p_method"]
-	def GetP2PpublicIP(self,userID):
-		return self.__Registry[userID]["p2p_public_ip"]
-	def GetP2PpublicPort(self,userID):
-		return self.__Registry[userID]["p2p_public_port"]
-	def GetP2PprivateIP(self,userID):
-		return self.__Registry[userID]["p2p_private_ip"]
-	def GetP2PprivatePort(self,userID):
-		return self.__Registry[userID]["p2p_private_port"]
-	
+
 
 			
 	
