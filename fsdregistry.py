@@ -2,6 +2,7 @@ class fsdregistry:
 
 	def __init__(self):
 		self.__Registry = {}
+		self.__MessageQue = {}
 		
 	def UpdateRegistry(self,client,param='defualt'):
 		
@@ -30,7 +31,9 @@ class fsdregistry:
 		if param == 'deletePilot':
 			self.__Registry.pop(self.__myID,None)
 
-	
+	def AddMessage(self,callsign,message):
+		return message
+		
 	def GetRegistry(self):
 		return self.__Registry		
 	def GetRegistryKeys(self):

@@ -48,6 +48,8 @@ class fsdclientworker(fsdnetwork):
 
 				#Delete pilot
 				if regex.match(self.FSDprotocol.FSDDeletePilot(),command):
+					#place message on announcement que
+					#self.FSDregistry.AddMessage()					
 					#remove the pilot from the pool
 					self.FSDregistry.UpdateRegistry(client,'deletePilot')
 					forever = False
