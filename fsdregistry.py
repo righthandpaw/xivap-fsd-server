@@ -2,7 +2,6 @@ class fsdregistry:
 
 	def __init__(self):
 		self.__Registry = {}
-		self.__MessageQue = {}
 		
 	def UpdateRegistry(self,client,param='defualt'):
 		
@@ -10,8 +9,7 @@ class fsdregistry:
 		
 		if param == 'defualt':
 			self.__Registry[self.__myID]={
-				"remoteaddress":client.GetRemoteAddress(),
-				"remoteport":client.GetRemotePort(),	
+				"connection":client.GetConnection(),	
 				"username":client.GetUserName(),
 				"fullname":client.GetFullName(),
 				"callsign":client.GetCallSign(),
@@ -31,16 +29,13 @@ class fsdregistry:
 		if param == 'deletePilot':
 			self.__Registry.pop(self.__myID,None)
 
-	def AddMessage(self,callsign,message):
-		return message
-		
+
 	def GetRegistry(self):
 		return self.__Registry		
 	def GetRegistryKeys(self):
 		return self.__Registry.keys()
 		
-		
-		
+
 	#User/Pilot information
 	def GetMyID(self):
 		return self.__myID
@@ -77,12 +72,10 @@ class fsdregistry:
 		return self.__Registry[userID]["ground"]
 		
 		
-		
 	#Network information information	
-	def GetRemoteAddress(self,userID):
-		return self.__Registry[userID]["remoteaddress"]
-	def GetRemotePort(self,userID):
-		return self.__Registry[userID]["remoteport"]
+	def GetConnection(self,userID):
+		return self.__Registry[userID]["connection"]
+	
 
 
 			

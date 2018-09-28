@@ -16,7 +16,7 @@ class fsdclientworker(fsdnetwork):
 
 		regex = re
 		client=fsdclientinfo()
-		raddress = client_socket.getpeername()
+
 		
 		i = 0
 		forever = True
@@ -38,7 +38,7 @@ class fsdclientworker(fsdnetwork):
 				
 				#Add a pilot
 				if regex.match(self.FSDprotocol.FSDAddPilot(),command):
-					client = self.FSDapi.AddPilot(words,raddress,client,self.FSDregistry)
+					client = self.FSDapi.AddPilot(words,client_socket,client,self.FSDregistry)
 					if client.GetVerification() == True:
 						self.FSDregistry.UpdateRegistry(client)
 					else:
@@ -49,7 +49,20 @@ class fsdclientworker(fsdnetwork):
 				#Delete pilot
 				if regex.match(self.FSDprotocol.FSDDeletePilot(),command):
 					#place message on announcement que
-					#self.FSDregistry.AddMessage()					
+					#self.FSDregistry.AddMessage()		
+					
+					#Quick broadcast test will move this to it's on thing later
+					for otherUserID in self.FSDregistry.GetRegistryKeys():
+						#except ourselve's ofcourse
+						
+						if otherUserID is not self.FSDregistry.GetMyID():
+							otherConnecton = self.FSDregistry.GetConnection(otherUserID)
+							print(otherConnecton)
+
+							delPilotStr = ("#TMserver:{}:{}\r\n".format(self.FSDregistry.GetCallSign(otherUserID),command))
+							otherConnecton.send(delPilotStr.encode())
+
+
 					#remove the pilot from the pool
 					self.FSDregistry.UpdateRegistry(client,'deletePilot')
 					forever = False
@@ -73,7 +86,6 @@ class fsdclientworker(fsdnetwork):
 						#You get nothing
 						print()
 				
-
 				#P2PRequest
 				if regex.match('\\'+self.FSDprotocol.FSDInfoRequest(),command):
 					self.FSDp2ppool.AddRequests(words)
@@ -150,9 +162,7 @@ class fsdclientworker(fsdnetwork):
 					p2pclient = self.FSDp2ppool.GetRequests(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
 					for key in p2pclient:
 						if p2pclient[key]['status'] == 'pending':
-							#print("sending")
-							#print(p2pclient[key])
-							#$CQAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
+							
 							p2pstring = ("{}{}:{}:P2P:{}:PPOS1:{}:{}:{}:{}\r\n".format(
 								p2pclient[key]['requesttype'],
 								p2pclient[key]['fromCallsign'],
@@ -163,15 +173,10 @@ class fsdclientworker(fsdnetwork):
 								p2pclient[key]['privateip'],
 								p2pclient[key]['privateport']
 							))
-							
+							print(p2pclient)
 							client_socket.send(p2pstring.encode())
 							self.FSDp2ppool.UpdateRequests(key)
-							#print(p2pclient[key])
-
-
-
-							
-							
+											
 		#Remove pilot
 		#if client.GetError()[error]
 

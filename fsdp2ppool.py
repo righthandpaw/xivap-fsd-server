@@ -15,9 +15,7 @@ class fsdp2ppool():
 		
 		
 	def AddRequests(self,words):
-		#$CQAAAA:BBBB:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
-		#$CRBBBB:AAAA:P2P:2:PPOS1:127.113.78.203:17504:192.168.0.7:17504
-		
+
 		status=self.td.acquire()
 		
 		matches = re.match('(\\'+self.FSD.FSDInfoRequest()+'|\\'+self.FSD.FSDInfoReply()+')([A-Za-z0-9]+)',words[0])
@@ -38,15 +36,15 @@ class fsdp2ppool():
 
 		if reversekey in self.__clientPool:
 			if self.__clientPool[reversekey]['requesttype'] == requesttype:
-				#print("We already sent this so we do not have to send again.")
+				print("We already sent this so we do not have to send again.")
 				doesExist = True
 			else:
-				#print("This does not exist so we can add it to the pile")
+				print("This does not exist so we can add it to the pile")
 				doesExist = False
 			
 		else:
 			doesExist = False
-			#print("no ... adding! ",key)
+			
 			
 		if doesExist == False:	
 			self.__clientPool[key]={
