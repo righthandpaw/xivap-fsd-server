@@ -3,7 +3,11 @@ class fsdclientinfo:
 	def __init__(	self,
 					callsign 		="",
 					connection		="",
-				
+					rank			="",
+					fsdver			="",
+					simver			="",
+
+
 					fullname		="",
 					username		="",
 					password		="",
@@ -23,6 +27,9 @@ class fsdclientinfo:
 		
 		self.__callsign			=	callsign
 		self.__connection		=	connection
+		self.__rank				=	rank
+		self.__fsdver			=	fsdver
+		self.__simver			=	simver
 		
 		self.__fullname			=	fullname
 		self.__username			=	username
@@ -59,6 +66,16 @@ class fsdclientinfo:
 	def SetPassword(self,password):
 		self.__password = password
 			
+
+	def SetRank(self,rank):
+		self.__rank	= rank
+
+	def SetFsdVer(self,fsdver):
+		self.__fsdver = fsdver
+
+	def SetSimVer(self,simver):
+		self.__simver = simver
+
 	def SetAirPlane(self,airplane):
 		self.__airplane = airplane
 
@@ -102,6 +119,16 @@ class fsdclientinfo:
 	
 	def GetConnection(self):
 		return self.__connection
+
+
+	def GetRank(self):
+		return self.__rank
+
+	def GetFsdVer(self):
+		return self.__fsdver
+
+	def GetSimVer(self):
+		return self.__simver	
 
 	
 	def GetFullName(self):

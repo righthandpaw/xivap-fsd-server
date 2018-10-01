@@ -24,6 +24,9 @@ class fsdregistry:
 				"speed":client.GetSpeed(),
 				"pitchbankheading":client.GetPitchBankHeading(),
 				"ground":client.GetGround(),
+				"rank":client.GetRank(),
+				"fsdver":client.GetFsdVer(),
+				"simver":client.GetSimVer(),
 				}
 
 		if param == 'deletePilot':
@@ -41,6 +44,17 @@ class fsdregistry:
 		return self.__myID
 	def GetCallSign(self,userID):
 		return self.__Registry[userID]["callsign"]
+
+
+	def GetRank(self,userID):
+		return self.__Registry[userID]["rank"]
+
+	def GetFsdVer(self,userID):
+		return self.__Registry[userID]["fsdver"]
+
+	def GetSimVer(self,userID):
+		return self.__Registry[userID]["simver"]
+
 	def GetRating(self,userID):
 		return self.__Registry[userID]["rating"]
 	

@@ -11,12 +11,32 @@ from fsdnetwork import fsdnetwork
 class fsdclientworker(fsdnetwork):
 	def __init__(self,FSDregistry,FSDapi,FSDprotocol,FSDp2ppool,bind_ip,bind_port,worker_type):
 		fsdnetwork.__init__(self,FSDregistry,FSDapi,FSDprotocol,FSDp2ppool,bind_ip,bind_port,worker_type)
-		
+	
+	def sendToOne(self,myID,toCallsign,message):
+		print(myID,toCallsign,message)
+
+		for otherUserID in self.FSDregistry.GetRegistryKeys():
+			print(self.FSDregistry.GetCallSign(otherUserID))
+
+			if self.FSDregistry.GetCallSign(otherUserID) == toCallsign:
+				otherConnecton = self.FSDregistry.GetConnection(otherUserID)
+				print(toCallsign,message)
+				otherConnecton.send(message.encode())
+
+	def sendToAll(self,myID,message):
+		print(myID,message)
+		#Quick broadcast test will move this to it's on thing later
+		for otherUserID in self.FSDregistry.GetRegistryKeys():
+			#except ourselve's ofcourse
+			if otherUserID is not myID:
+				otherConnecton = self.FSDregistry.GetConnection(otherUserID)
+				otherConnecton.send(message.encode())
+
 	def worker(self,client_socket):
 
 		regex = re
 		client=fsdclientinfo()
-
+		locaRegistry = {}
 		
 		i = 0
 		forever = True
@@ -41,6 +61,40 @@ class fsdclientworker(fsdnetwork):
 					client = self.FSDapi.AddPilot(words,client_socket,client,self.FSDregistry)
 					if client.GetVerification() == True:
 						self.FSDregistry.UpdateRegistry(client)
+
+						motds = {	"Python FSD Flight server\r\n",
+									"Based on Open XIVAP Protocol\r\n",
+									" \r\n",
+									"Enjoy your flight!\r\n",
+								}
+						for motd in motds:
+							string = ("#TMserver:{}:{}\r\n".format(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),motd)) 
+							client_socket.send(string.encode())	
+
+
+						#Announce to everyone ... hey add me to your friend list
+						addPilotStr = ("{}:{}:{}::{}:{}:{}\r\n".format(words[0],words[1],words[2],words[4],words[5],words[6]))
+						self.sendToAll(self.FSDregistry.GetMyID(),addPilotStr)
+
+						for addPilotID in self.FSDregistry.GetRegistryKeys():
+							print(addPilotID,self.FSDregistry.GetRegistryKeys())
+							if addPilotID is not self.FSDregistry.GetMyID(): 
+
+								#APAAAA:SERVER:XP210:PASSWORD:11:B:14:FULL NAME ICAO
+								#  0      1      2     3       4 5  6  7
+								addOtherPilotstr = (	
+									"#AP{}:SERVER:{}::{}:{}:{}\r\n".format(
+									
+									self.FSDregistry.GetCallSign(addPilotID),
+									addPilotID,
+									self.FSDregistry.GetRank(addPilotID),
+									self.FSDregistry.GetFsdVer(addPilotID),
+									self.FSDregistry.GetSimVer(addPilotID),
+
+								))
+								client_socket.send(addOtherPilotstr.encode())
+
+						#might need to send list of already connected clients to the user...won't add for now
 					else:
 						for error in client.GetError():
 							print(client.GetError()[error])
@@ -49,20 +103,8 @@ class fsdclientworker(fsdnetwork):
 				#Delete pilot
 				if regex.match(self.FSDprotocol.FSDDeletePilot(),command):
 					#place message on announcement que
-					#self.FSDregistry.AddMessage()		
-					
-					#Quick broadcast test will move this to it's on thing later
-					for otherUserID in self.FSDregistry.GetRegistryKeys():
-						#except ourselve's ofcourse
-						
-						if otherUserID is not self.FSDregistry.GetMyID():
-							otherConnecton = self.FSDregistry.GetConnection(otherUserID)
-							print(otherConnecton)
-
-							delPilotStr = ("#TMserver:{}:{}\r\n".format(self.FSDregistry.GetCallSign(otherUserID),command))
-							otherConnecton.send(delPilotStr.encode())
-
-
+					delPilotStr = ("{}\r\n".format(words[0]))
+					self.sendToAll(self.FSDregistry.GetMyID(),delPilotStr)
 					#remove the pilot from the pool
 					self.FSDregistry.UpdateRegistry(client,'deletePilot')
 					forever = False
@@ -72,27 +114,27 @@ class fsdclientworker(fsdnetwork):
 					client = self.FSDapi.PlaneInfo(words,client)
 					if client.GetVerification() == True:
 						self.FSDregistry.UpdateRegistry(client)
-						
-						
-						motds = {	"Python FSD Flight server\r\n",
-									"Based on Open XIVAP Protocol\r\n",
-									" \r\n",
-									"Enjoy your flight!\r\n",
-								}
-						for motd in motds:
-							string = ("#TMserver:{}:{}\r\n".format(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),motd)) 
-							client_socket.send(string.encode())			
+								
 					else:
 						#You get nothing
 						print()
 				
 				#P2PRequest
+				#$CQDIROB11:NR1919:P2P:2:PPOS1:172.113.78.203:17504:192.168.0.7:17504 
 				if regex.match('\\'+self.FSDprotocol.FSDInfoRequest(),command):
-					self.FSDp2ppool.AddRequests(words)
+					p2pstr = ("{}\r\n".format(sentence))
+
+					#did we get a p2p request already?
+					#self.sendToOne(self.FSDregistry.GetMyID(),words[1],p2pstr)
+					#toCallsign 		= words[1]
+					#self.FSDp2ppool.AddRequests(words)
 					
 				#P2PReply
 				if regex.match('\\'+self.FSDprotocol.FSDInfoReply(),command):
-					self.FSDp2ppool.AddRequests(words)
+					p2pstr = ("{}\r\n".format(sentence))
+					#self.sendToOne(self.FSDregistry.GetMyID(),words[1],p2pstr)
+					#toCallsign 		= words[1]
+					#self.FSDp2ppool.AddRequests(words)
 					
 				
 
@@ -158,7 +200,7 @@ class fsdclientworker(fsdnetwork):
 							client_socket.send(string.encode())
 					
 					##DO The p2p stuff here
-
+					'''
 					p2pclient = self.FSDp2ppool.GetRequests(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
 					for key in p2pclient:
 						if p2pclient[key]['status'] == 'pending':
@@ -176,7 +218,7 @@ class fsdclientworker(fsdnetwork):
 							print(p2pclient)
 							client_socket.send(p2pstring.encode())
 							self.FSDp2ppool.UpdateRequests(key)
-											
+					'''						
 		#Remove pilot
 		#if client.GetError()[error]
 
