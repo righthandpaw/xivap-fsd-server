@@ -36,10 +36,8 @@ class fsdp2ppool():
 
 		if reversekey in self.__clientPool:
 			if self.__clientPool[reversekey]['requesttype'] == requesttype:
-				print("We already sent this so we do not have to send again.")
 				doesExist = True
 			else:
-				print("This does not exist so we can add it to the pile")
 				doesExist = False
 			
 		else:
@@ -74,4 +72,7 @@ class fsdp2ppool():
 	
 	def UpdateRequests(self,key):
 		self.__clientPool[key]['status']='sent'
+
+	def ClearPool(self):
+		self.__clientPool.clear()
 		

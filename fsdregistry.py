@@ -3,40 +3,40 @@ class fsdregistry:
 	def __init__(self):
 		self.__Registry = {}
 		
-	def UpdateRegistry(self,client,param='defualt'):
+	def UpdateRegistry(self,client):
 		
 		self.__myID = client.GetUserName()
 		
-		if param == 'defualt':
-			self.__Registry[self.__myID]={
-				"connection":client.GetConnection(),	
-				"username":client.GetUserName(),
-				"fullname":client.GetFullName(),
-				"callsign":client.GetCallSign(),
-				"password":client.GetPassword(),
-				"airplane":client.GetAirPlane(),
-				"ident":client.GetIdent(),
-				"transponder":client.GetTransponder(),
-				"rating":client.GetRating(),
-				"latitude":client.GetLatitude(),
-				"longitude":client.GetLongitude(),
-				"truealt":client.GetTrueAlt(),
-				"speed":client.GetSpeed(),
-				"pitchbankheading":client.GetPitchBankHeading(),
-				"ground":client.GetGround(),
-				"rank":client.GetRank(),
-				"fsdver":client.GetFsdVer(),
-				"simver":client.GetSimVer(),
-				}
+		self.__Registry[self.__myID]={
+			"connection":client.GetConnection(),	
+			"username":client.GetUserName(),
+			"fullname":client.GetFullName(),
+			"callsign":client.GetCallSign(),
+			"password":client.GetPassword(),
+			"airplane":client.GetAirPlane(),
+			"ident":client.GetIdent(),
+			"transponder":client.GetTransponder(),
+			"rating":client.GetRating(),
+			"latitude":client.GetLatitude(),
+			"longitude":client.GetLongitude(),
+			"truealt":client.GetTrueAlt(),
+			"speed":client.GetSpeed(),
+			"pitchbankheading":client.GetPitchBankHeading(),
+			"ground":client.GetGround(),
+			"rank":client.GetRank(),
+			"fsdver":client.GetFsdVer(),
+			"simver":client.GetSimVer(),
+			}
 
-		if param == 'deletePilot':
-			self.__Registry.pop(self.__myID,None)
-
+	def DeleteKey(self,userID):
+		print(userID)
+		self.__Registry.pop(userID,None)
 
 	def GetRegistry(self):
 		return self.__Registry		
 	def GetRegistryKeys(self):
-		return self.__Registry.keys()
+		#return self.__Registry.keys()
+		return self.__Registry.copy()
 		
 
 	#User/Pilot information

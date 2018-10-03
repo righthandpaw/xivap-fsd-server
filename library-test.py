@@ -73,8 +73,97 @@ class tester():
 		t = threading.currentThread()
 		
 	
-		
+class duallibs():
+	def __init__(self):
+		self.registy={}
+
+	def main(self):
+		localRegistry={}
+
+		self.registy['X01']={
+			"pilot":"aaaa"
+		}
+
+		self.registy['X02']={
+			"pilot":"bbbb"
+		}
+
+		self.registy['X03']={
+			"pilot":"cccc"
+		}
+
+
+
 				
+		localRegistry['X01']={
+			"pilot":"aaaa"
+		}		
 	
-tester().main()	
-#MyServer = tester()
+
+
+
+		print("self.registry = ", self.registy)
+		print("localRegisty = ",localRegistry)
+
+
+
+
+
+
+		if len(self.registy) >= len(localRegistry):
+			for key in self.registy.keys():
+				if key not in localRegistry:
+					localRegistry[key]={
+						"pilot":self.registy[key]["pilot"],
+					}
+
+
+		
+
+
+		print("localRegisty = ",localRegistry)
+		self.registy.pop('X01',None)
+		print(self.registy)
+
+		if len(self.registy) <= len(localRegistry):
+			print("have to remove pilot")
+			for key in localRegistry.copy():
+				if key not in self.registy:
+					print("this {} is nolonger in self.registry, deleting from localRegistry".format(key))
+					localRegistry.pop(key,None)
+		
+		
+
+
+
+		if len(self.registy) >= len(localRegistry):
+			for key in self.registy.keys():
+				if key not in localRegistry:
+					localRegistry[key]={
+						"pilot":self.registy[key]["pilot"],
+					}
+
+		if len(self.registy) <= len(localRegistry):
+			for key in localRegistry.copy():
+				if key not in self.registy:
+					print("this {} is nolonger in self.registry, deleting from localRegistry".format(key))
+					localRegistry.pop(key,None)
+
+
+
+
+
+
+
+
+		
+		print(localRegistry)
+	
+
+		#Thoughts, check the lengths if self.registry is longer the local reg is missing
+		#if local is longer then we need to delete
+		#if they are the same compare keys
+
+
+#tester().main()	
+duallibs().main()
