@@ -78,7 +78,12 @@ class fsdclientworker(fsdnetwork):
 
 				#Delete pilot
 				if regex.match(self.FSDprotocol.FSDDeletePilot(),command):
-					self.FSDregistry.DeleteKey(self.FSDregistry.GetMyID())
+
+					#do a check to see if there is a p2p connection ... 
+					#p2pclient = self.FSDp2ppool.GetRequests(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
+					#print(p2pclient)
+					self.FSDregistry.UpdateRegistry(client,'delete')
+					#if self.FSDregistry.DeleteKey(self.FSDregistry.GetMyID()) == True:
 					forever = False
 
 				#Plane Info				
@@ -121,7 +126,7 @@ class fsdclientworker(fsdnetwork):
 
 				#Plane Params (Don't know what this is used for but it is called after it recieves the welcome message				
 				if regex.match(self.FSDprotocol.FSDPlaneParams(),command):
-					print(command);
+					print(command)
 						
 				#Pilot Position
 				#example we recieve the following string the our client:
@@ -131,7 +136,6 @@ class fsdclientworker(fsdnetwork):
 					client = self.FSDapi.PilotPosition(words,client)
 					#we update our client's position in the global registry
 					self.FSDregistry.UpdateRegistry(client)
-
 
 					#if a new pilot happens to come on board we need to add them 
 					if len(self.FSDregistry.GetRegistryKeys())-1 >= len(localRegistry):
@@ -146,26 +150,26 @@ class fsdclientworker(fsdnetwork):
 										"#AP{}:{}:{}::{}:{}:{}\r\n".format(
 							
 										self.FSDregistry.GetCallSign(key),
-										self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),
+										#self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),
+										'SERVER',
 										key,
 										self.FSDregistry.GetRank(key),
 										self.FSDregistry.GetFsdVer(key),
 										self.FSDregistry.GetSimVer(key),
 									))
 									client_socket.send(addOtherPilotstr.encode())
-					print(len(self.FSDregistry.GetRegistryKeys())-1,len(localRegistry))
+
+					print("Current Client -> {}  FSD -> {}  Local -> {}".format(self.FSDregistry.GetMyID(),len(self.FSDregistry.GetRegistryKeys())-1,localRegistry))
+					
 
 					if len(self.FSDregistry.GetRegistryKeys())-1 <= len(localRegistry):
 							for key in localRegistry.copy():
-								print(key)
 								if key not in self.FSDregistry.GetRegistryKeys():
 									print("this {} is nolonger in self.registry, deleting from localRegistry".format(key))
 									delPilotStr = ("#DP{}\r\n".format(localRegistry[key]['callsign']))
 									client_socket.send(delPilotStr.encode())
 									localRegistry.pop(key,None)
-
-
-
+					
 
 
 					#Next we need to have the server query the global registry 
@@ -176,9 +180,6 @@ class fsdclientworker(fsdnetwork):
 
 							#format
 							#@S:DIROB11:1554:11:43.76123:-99.31627:1695:0:4261416526:-84
-
-
-
 
 							Posstr = (	"@{}:{}:{}:{}:{}:{}:{}:{}:{}:{}\r\n".format(
 									self.FSDregistry.GetIdent(otherUserID),
@@ -212,9 +213,10 @@ class fsdclientworker(fsdnetwork):
 								p2pclient[key]['privateip'],
 								p2pclient[key]['privateport']
 							))
-							print(p2pclient)
+							print("before: ",p2pclient)
 							client_socket.send(p2pstring.encode())
 							self.FSDp2ppool.UpdateRequests(key)
+							print("after: ",p2pclient)
 										
 		#Remove pilot
 		#if client.GetError()[error]
