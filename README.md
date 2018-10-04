@@ -14,9 +14,10 @@ What works:
 + Multiple clients can connect
 + Information about the air plane models are correctly exchanged
 + Positional information is correctly exchanged (currently over TCP)
++ Disconnect from server now works
 
 What does not work:
-- P2P handshaking is currently not working
+- P2P handshaking is currently <strike>not</strike> partially working
 - Administration is not implimented yet
 
 
