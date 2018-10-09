@@ -13,14 +13,16 @@ class fsdapi:
 		self.FSDPilotPosition = FSD.FSDPilotPosition()
 		self.FSDInfoRequest	=	FSD.FSDInfoRequest()	
 	
-	def AddPilot(self,words,raddress,client,registry):
-		
+	def AddPilot(self,words,client_socket,client,registry):
+		#APAAAA:SERVER:XP210:PASSWORD:11:B:14:FULL NAME ICAO
+		#  0      1      2     3       4 5  6  7
 		matches		= re.match(self.FSDAddPilot+'([A-Za-z0-9]+)',words[0])
 		callsign 	= matches.group(1)
 		username	= words[2]
 		password	= words[3]
-		remote_address	= raddress[0]
-		remote_port		= raddress[1]
+		rank		= words[4]
+		fsdversion	= words[5]
+		simver		= words[6]
 
 		errorCount = 0
 		
@@ -42,10 +44,12 @@ class fsdapi:
 	
 		client.SetUserName(username)
 		client.SetPassword(password)
-		client.SetRemoteAddress(remote_address)
-		client.SetRemotePort(remote_port)
 		client.SetCallSign(callsign)
+		client.SetRank(rank)
+		client.SetFsdVer(fsdversion)
+		client.SetSimVer(simver)
 		client.SetFullName(words[7])
+		client.SetConnection(client_socket)
 
 		return client
 

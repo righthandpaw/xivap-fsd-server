@@ -2,16 +2,14 @@ class fsdregistry:
 
 	def __init__(self):
 		self.__Registry = {}
-		self.__MessageQue = {}
 		
-	def UpdateRegistry(self,client,param='defualt'):
+	def UpdateRegistry(self,client,param='default'):
 		
 		self.__myID = client.GetUserName()
 		
-		if param == 'defualt':
+		if param == 'default':
 			self.__Registry[self.__myID]={
-				"remoteaddress":client.GetRemoteAddress(),
-				"remoteport":client.GetRemotePort(),	
+				"connection":client.GetConnection(),	
 				"username":client.GetUserName(),
 				"fullname":client.GetFullName(),
 				"callsign":client.GetCallSign(),
@@ -26,26 +24,39 @@ class fsdregistry:
 				"speed":client.GetSpeed(),
 				"pitchbankheading":client.GetPitchBankHeading(),
 				"ground":client.GetGround(),
+				"rank":client.GetRank(),
+				"fsdver":client.GetFsdVer(),
+				"simver":client.GetSimVer(),
 				}
-
-		if param == 'deletePilot':
+		if param == 'delete':
 			self.__Registry.pop(self.__myID,None)
 
-	def AddMessage(self,callsign,message):
-		return message
-		
+	#def DeleteKey(self,userID):
+	#	return True
+
 	def GetRegistry(self):
 		return self.__Registry		
 	def GetRegistryKeys(self):
-		return self.__Registry.keys()
+		#return self.__Registry.keys()
+		return self.__Registry.copy()
 		
-		
-		
+
 	#User/Pilot information
 	def GetMyID(self):
 		return self.__myID
 	def GetCallSign(self,userID):
 		return self.__Registry[userID]["callsign"]
+
+
+	def GetRank(self,userID):
+		return self.__Registry[userID]["rank"]
+
+	def GetFsdVer(self,userID):
+		return self.__Registry[userID]["fsdver"]
+
+	def GetSimVer(self,userID):
+		return self.__Registry[userID]["simver"]
+
 	def GetRating(self,userID):
 		return self.__Registry[userID]["rating"]
 	
@@ -77,12 +88,10 @@ class fsdregistry:
 		return self.__Registry[userID]["ground"]
 		
 		
-		
 	#Network information information	
-	def GetRemoteAddress(self,userID):
-		return self.__Registry[userID]["remoteaddress"]
-	def GetRemotePort(self,userID):
-		return self.__Registry[userID]["remoteport"]
+	def GetConnection(self,userID):
+		return self.__Registry[userID]["connection"]
+	
 
 
 			

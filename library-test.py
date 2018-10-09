@@ -1,7 +1,8 @@
 import re
 import threading
 from threading import Lock
-from fsdp2ppool import fsdp2ppool
+#from fsdp2ppool import fsdp2ppool
+from fsdregistry import fsdregistry
 from pprint import pprint
 import time
 
@@ -10,7 +11,7 @@ class tester():
 
 	def __init__(self):
 		self.fsdinforequest	=	"$CQ"
-		self.FSDp2ppool = fsdp2ppool()
+		self.FSDregistry = fsdregistry()
 
 	
 	def main(self):	
@@ -19,7 +20,7 @@ class tester():
 		
 		a_thread = threading.Thread(target=self.workerA,)
 		b_thread = threading.Thread(target=self.workerB,)
-		c_thread = threading.Thread(target=self.workerB,)
+		c_thread = threading.Thread(target=self.workerC,)
 		a_thread.start()
 		b_thread.start()
 		c_thread.start()
@@ -27,96 +28,142 @@ class tester():
 		
 	def workerA(self):	
 
-		
-		w_thread = threading.Thread(target=self.watcher,args=('NR1918',))
-		w_thread.start()		
-		
-		
-		
+
 
 		sentences = [
-					'$CQNR1918:NR1919:P2P:2:PPOS1:114.158.182.21:24062:127.0.0.1:29587',
-					'$CQNR1918:NR1920:P2P:2:PPOS1:114.158.182.21:24062:127.0.0.1:29587',
-					'$CRNR1918:NR1919:P2P:2:PPOS1:114.158.182.21:24062:127.0.0.1:29587',
-					'$CRNR1918:NR1920:P2P:2:PPOS1:114.158.182.21:24062:127.0.0.1:29587',
+					'#DLAAAAA',
 					]
 		
 		for sentence in sentences:
-			print(w_thread.name)
-			self.FSDp2ppool.AddRequests(sentence.split(':'))
+			self.FSDregistry.AddMessage(sentence)
 		
-		#end the thread
-		w_thread.do_run = False 
+		time.sleep(2)
+		print(self.FSDregistry.GetMessage())
+
 
 	def workerB(self):
 		
 
 		
-	
-		w_thread = threading.Thread(target=self.watcher,args=('NR1919',))
-		w_thread.start()
-		
-		
 		sentences = [
-					'$CQNR1919:NR1918:P2P:2:PPOS1:114.158.182.21:21870:127.0.0.1:29512',
-					'$CQNR1919:NR1920:P2P:2:PPOS1:114.158.182.21:21870:127.0.0.1:29512',
-					'$CRNR1919:NR1918:P2P:2:PPOS1:114.158.182.21:21870:127.0.0.1:29512',
-					'$CRNR1919:NR1920:P2P:2:PPOS1:114.158.182.21:21870:127.0.0.1:29512',
+					'#MDBBBB:B722',
 					]
 		
 		for sentence in sentences:
-			print(w_thread.name)
-			self.FSDp2ppool.AddRequests(sentence.split(':'))
-	
-		#end the thread
-		w_thread.do_run = False 
+			self.FSDregistry.AddMessage(sentence)
+
+		time.sleep(2)
+		print(self.FSDregistry.GetMessage())
+
 
 	def workerC(self):
 		
-		w_thread = threading.Thread(target=self.watcher,args=('NR1920',))
-		w_thread.start()
-		print(w_thread.name)
-		
 		sentences = [
-					'$CQNR1920:NR1918:P2P:2:PPOS1:114.158.182.21:21870:127.0.0.1:29512',
-					'$CQNR1920:NR1919:P2P:2:PPOS1:114.158.182.21:21870:127.0.0.1:29512',
-					'$CRNR1920:NR1918:P2P:2:PPOS1:114.158.182.21:21870:127.0.0.1:29512',
-					'$CRNR1920:NR1919:P2P:2:PPOS1:114.158.182.21:21870:127.0.0.1:29512'
+					'#MDCCCC:C172',
 					]
 		
 		for sentence in sentences:
-			self.FSDp2ppool.AddRequests(sentence.split(':'))
-
-		#end the thread
-		w_thread.do_run = False 
-	
+			self.FSDregistry.AddMessage(sentence)
+		time.sleep(2)	
+		print(self.FSDregistry.GetMessage())
 		
 	def watcher(self,callsign):
 	
 		
 		t = threading.currentThread()
 		
-		
-		while getattr(t, "do_run", True):
-			waiting = True
-			while waiting == True and getattr(t, "do_run", True):
-			#while True:
-			#	waiting = True
-			#	while waiting == True:
-				if self.FSDp2ppool.GetRequests(callsign) != {}:
-					waiting = False
-			
-			p2pclient = self.FSDp2ppool.GetRequests(callsign)
-			for key in p2pclient:
-				if p2pclient[key]['status'] == 'pending':
-					print("Give me all messages for Callsign - {}".format(callsign))
-					print("sending")
-					print(p2pclient[key])
-					self.FSDp2ppool.UpdateRequests(key)
-					print(p2pclient[key])
-					print(t.name)
-		
-				
 	
-tester().main()	
-#MyServer = tester()
+class duallibs():
+	def __init__(self):
+		self.registy={}
+
+	def main(self):
+		localRegistry={}
+
+		self.registy['X01']={
+			"pilot":"aaaa"
+		}
+
+		self.registy['X02']={
+			"pilot":"bbbb"
+		}
+
+		self.registy['X03']={
+			"pilot":"cccc"
+		}
+
+
+
+				
+		localRegistry['X01']={
+			"pilot":"aaaa"
+		}		
+	
+
+
+
+		print("self.registry = ", self.registy)
+		print("localRegisty = ",localRegistry)
+
+
+
+
+
+
+		if len(self.registy) >= len(localRegistry):
+			for key in self.registy.keys():
+				if key not in localRegistry:
+					localRegistry[key]={
+						"pilot":self.registy[key]["pilot"],
+					}
+
+
+		
+
+
+		print("localRegisty = ",localRegistry)
+		self.registy.pop('X01',None)
+		print(self.registy)
+
+		if len(self.registy) <= len(localRegistry):
+			print("have to remove pilot")
+			for key in localRegistry.copy():
+				if key not in self.registy:
+					print("this {} is nolonger in self.registry, deleting from localRegistry".format(key))
+					localRegistry.pop(key,None)
+		
+		
+
+
+
+		if len(self.registy) >= len(localRegistry):
+			for key in self.registy.keys():
+				if key not in localRegistry:
+					localRegistry[key]={
+						"pilot":self.registy[key]["pilot"],
+					}
+
+		if len(self.registy) <= len(localRegistry):
+			for key in localRegistry.copy():
+				if key not in self.registy:
+					print("this {} is nolonger in self.registry, deleting from localRegistry".format(key))
+					localRegistry.pop(key,None)
+
+
+
+
+
+
+
+
+		
+		print(localRegistry)
+	
+
+		#Thoughts, check the lengths if self.registry is longer the local reg is missing
+		#if local is longer then we need to delete
+		#if they are the same compare keys
+
+
+#tester().main()	
+duallibs().main()
