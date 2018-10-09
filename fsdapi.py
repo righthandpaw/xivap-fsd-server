@@ -23,35 +23,33 @@ class fsdapi:
 		rank		= words[4]
 		fsdversion	= words[5]
 		simver		= words[6]
-
-		errorCount = 0
 		
 		#cleck to see if registry
 		existingClient = registry.GetRegistry()
 
+		
+
+		#if the callsign already exists we don't add the user
+		for callsigns in existingClient.keys():
+			if existingClient[callsigns]["callsign"]==callsign:
+				client.SetVerification(False)
+				return client
+				
 		if username in existingClient.keys():
 			client.SetVerification(False)
-			client.SetError(errorCount,"Already Logged In")
-			errorCount+=1
+			return client
 		else:		
 			client.SetVerification(True)
-			
-		for val in existingClient.keys():
-			if existingClient[val]["callsign"]==callsign:
-				client.SetVerification(False)
-				client.SetError(errorCount,"Callsign areadly in use")
-				errorCount+=1
-	
-		client.SetUserName(username)
-		client.SetPassword(password)
-		client.SetCallSign(callsign)
-		client.SetRank(rank)
-		client.SetFsdVer(fsdversion)
-		client.SetSimVer(simver)
-		client.SetFullName(words[7])
-		client.SetConnection(client_socket)
-
-		return client
+			client.SetUserName(username)
+			client.SetPassword(password)
+			client.SetCallSign(callsign)
+			client.SetRank(rank)
+			client.SetFsdVer(fsdversion)
+			client.SetSimVer(simver)
+			client.SetFullName(words[7])
+			client.SetConnection(client_socket)
+			return client
+		
 
 
 	def PlaneInfo(self,words,client):

@@ -55,6 +55,9 @@ class fsdclientworker(fsdnetwork):
 				command = words[0]
 
 				if not request:
+					#if was verified we have to remove the client from the pool
+					if client.GetVerification() == True:
+						self.FSDregistry.UpdateRegistry(client,'delete')
 					forever = False
 				
 				#Add a pilot
@@ -72,9 +75,9 @@ class fsdclientworker(fsdnetwork):
 							client_socket.send(string.encode())	
 
 					else:
-						for error in client.GetError():
-							print(client.GetError()[error])
-							forever = False
+						string = ("#TMserver::Callsign or Username already in use!\r\n")
+						client_socket.send(string.encode())
+						forever = False
 
 				#Delete pilot
 				if regex.match(self.FSDprotocol.FSDDeletePilot(),command):
