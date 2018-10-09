@@ -22,6 +22,8 @@ class fsdclientinfo:
 					speed				="",
 					pitchbankheading	="",
 					ground				="",
+					params 				="",
+
 					
 					verified=False):
 		
@@ -46,6 +48,7 @@ class fsdclientinfo:
 		self.__ground			=	ground
 		
 		
+		self.__params		=	params
 		self.__verified		=	verified
 		self.__error		=	{}
 
@@ -105,6 +108,9 @@ class fsdclientinfo:
 		
 	def SetGround(self,ground):
 		self.__ground = ground
+
+	def SetParam(self,params):
+		self.__params = params
 		
 	def SetVerification(self,verified):
 		self.__verified = verified
@@ -168,7 +174,10 @@ class fsdclientinfo:
 		return self.__pitchbankheading
 		
 	def GetGround(self):
-		return self.__ground	
+		return self.__ground
+
+	def GetParam(self):
+		return self.__params	
 		
 	def GetVerification(self):
 		return self.__verified

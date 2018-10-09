@@ -27,14 +27,12 @@ class fsdapi:
 		#cleck to see if registry
 		existingClient = registry.GetRegistry()
 
-		
-
 		#if the callsign already exists we don't add the user
 		for callsigns in existingClient.keys():
 			if existingClient[callsigns]["callsign"]==callsign:
 				client.SetVerification(False)
 				return client
-				
+
 		if username in existingClient.keys():
 			client.SetVerification(False)
 			return client
@@ -53,10 +51,17 @@ class fsdapi:
 
 
 	def PlaneInfo(self,words,client):
-	
+		#-PDCALLSIGN:SERVER:C172 
+		# 0         :  1   : 2
 		airplane = words[2]
 		client.SetAirPlane(airplane)
 		
+		return client
+
+	def PlaneParam(self,words,client):
+		#INBOUND:  -MDCALLSIGN:SERVER:PARAMS
+		#OUTBOUND: -MDCALLSIGN:*P:PARAMS
+		client.SetParam(words[2])
 		return client
 
 	

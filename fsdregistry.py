@@ -27,12 +27,10 @@ class fsdregistry:
 				"rank":client.GetRank(),
 				"fsdver":client.GetFsdVer(),
 				"simver":client.GetSimVer(),
+				"param":client.GetParam(),
 				}
 		if param == 'delete':
 			self.__Registry.pop(self.__myID,None)
-
-	#def DeleteKey(self,userID):
-	#	return True
 
 	def GetRegistry(self):
 		return self.__Registry		
@@ -87,7 +85,10 @@ class fsdregistry:
 	def GetGround(self,userID):
 		return self.__Registry[userID]["ground"]
 		
-		
+	
+	def GetParams(self,userID):
+		return self.__Registry[userID]["param"]
+
 	#Network information information	
 	def GetConnection(self,userID):
 		return self.__Registry[userID]["connection"]

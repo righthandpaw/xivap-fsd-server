@@ -61,6 +61,8 @@ class fsdclientworker(fsdnetwork):
 					forever = False
 				
 				#Add a pilot
+				#APAAAA:SERVER:XP210:PASSWORD:11:B:14:FULL NAME ICAO
+				#  0      1      2     3       4 5  6  7
 				if regex.match(self.FSDprotocol.FSDAddPilot(),command):
 					client = self.FSDapi.AddPilot(words,client_socket,client,self.FSDregistry)
 					if client.GetVerification() == True:
@@ -72,7 +74,42 @@ class fsdclientworker(fsdnetwork):
 								}
 						for motd in motds:
 							string = ("#TMserver:{}:{}\r\n".format(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),motd)) 
-							client_socket.send(string.encode())	
+							client_socket.send(string.encode())
+
+
+						#if a new pilot happens to come on board we need to add them 
+						if len(self.FSDregistry.GetRegistryKeys())-1 >= len(localRegistry):
+							for key in self.FSDregistry.GetRegistryKeys():
+								if key is not self.FSDregistry.GetMyID():
+									if key not in localRegistry:
+										print("Adding pilotID = ",key)
+										localRegistry[key]={
+											"callsign":self.FSDregistry.GetCallSign(key)
+										}
+										addOtherPilotstr = (	
+											"#AP{}:{}:{}::{}:{}:{}\r\n".format(
+								
+											self.FSDregistry.GetCallSign(key),
+											'SERVER',
+											key,
+											self.FSDregistry.GetRank(key),
+											self.FSDregistry.GetFsdVer(key),
+											self.FSDregistry.GetSimVer(key),
+										))
+										client_socket.send(addOtherPilotstr.encode())
+										#we also need what they are flying in too
+
+										addOtherPlaneInfo = (
+											"-PD{}:*P:{}\r\n".format(
+												self.FSDregistry.GetCallSign(key),
+												self.FSDregistry.GetAirPlane(key)
+											))
+										client_socket.send(addOtherPlaneInfo.encode())
+
+
+					###############################################
+
+
 
 					else:
 						string = ("#TMserver::Callsign or Username already in use!\r\n")
@@ -80,37 +117,41 @@ class fsdclientworker(fsdnetwork):
 						forever = False
 
 				#Delete pilot
+				# INBOUND:  #DPNX2190
+				# OUTBOUND: #DPNX2190:XP10269
 				if regex.match(self.FSDprotocol.FSDDeletePilot(),command):
-
-					#do a check to see if there is a p2p connection ... 
-					#p2pclient = self.FSDp2ppool.GetRequests(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
-					#print(p2pclient)
 					self.FSDregistry.UpdateRegistry(client,'delete')
-					#if self.FSDregistry.DeleteKey(self.FSDregistry.GetMyID()) == True:
 					forever = False
 
-				#Plane Info				
-				if regex.match(self.FSDprotocol.FSDPlaneInfo(),command):
+				#Plane Info
+				#-PDCALLSIGN:SERVER:C172 
+				# 0         :  1   : 2				
+				if regex.match(self.FSDprotocol.FSDPlaneInfo(),command):	
 					client = self.FSDapi.PlaneInfo(words,client)
 					self.FSDregistry.UpdateRegistry(client)	
 					for otherUserID in self.FSDregistry.GetRegistryKeys():
-						#except ourselve's ofcourse
 						if otherUserID is not self.FSDregistry.GetMyID():
-							sendPD = ("-PD{}:{}:{}\r\n".format(
+							sendPD = ("-PD{}:*P:{}\r\n".format(
 									self.FSDregistry.GetCallSign(otherUserID),
-									self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),
 									self.FSDregistry.GetAirPlane(otherUserID)
-							
-							))
-
-							sendMD = ("-PM{}:{}:\r\n".format(
-									self.FSDregistry.GetCallSign(otherUserID),
-									self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID())
 							
 							))
 
 							client_socket.send(sendPD.encode())
 							print(sendPD)
+				
+				#Plane Params 
+				if regex.match(self.FSDprotocol.FSDPlaneParams(),command):
+					client = self.FSDapi.PlaneParam(words,client)
+					self.FSDregistry.UpdateRegistry(client)
+					for otherUserID in self.FSDregistry.GetRegistryKeys():
+						if otherUserID is not self.FSDregistry.GetMyID():
+							sendMD = ("-MD{}:*P:{}\r\n".format(
+									self.FSDregistry.GetCallSign(otherUserID),
+									self.FSDregistry.GetParams(otherUserID)
+							
+							))
+
 							client_socket.send(sendMD.encode())
 							print(sendMD)
 				
@@ -125,11 +166,8 @@ class fsdclientworker(fsdnetwork):
 					p2pstr = ("{}\r\n".format(sentence))
 					self.FSDp2ppool.AddRequests(words)
 					
-				
 
-				#Plane Params (Don't know what this is used for but it is called after it recieves the welcome message				
-				if regex.match(self.FSDprotocol.FSDPlaneParams(),command):
-					print(command)
+				
 						
 				#Pilot Position
 				#example we recieve the following string the our client:
@@ -161,6 +199,14 @@ class fsdclientworker(fsdnetwork):
 										self.FSDregistry.GetSimVer(key),
 									))
 									client_socket.send(addOtherPilotstr.encode())
+									#we also need what they are flying in too
+
+									addOtherPlaneInfo = (
+										"-PD{}:*P:{}\r\n".format(
+											self.FSDregistry.GetCallSign(key),
+											self.FSDregistry.GetAirPlane(key)
+										))
+									client_socket.send(addOtherPlaneInfo.encode())
 
 					print("Current Client -> {}  FSD -> {}  Local -> {}".format(self.FSDregistry.GetMyID(),len(self.FSDregistry.GetRegistryKeys())-1,localRegistry))
 					
@@ -169,7 +215,8 @@ class fsdclientworker(fsdnetwork):
 							for key in localRegistry.copy():
 								if key not in self.FSDregistry.GetRegistryKeys():
 									print("this {} is nolonger in self.registry, deleting from localRegistry".format(key))
-									delPilotStr = ("#DP{}\r\n".format(localRegistry[key]['callsign']))
+									delPilotStr = ("#DP{}:{}\r\n".format(localRegistry[key]['callsign'],key))
+									print(delPilotStr)
 									client_socket.send(delPilotStr.encode())
 									localRegistry.pop(key,None)
 					
@@ -218,6 +265,13 @@ class fsdclientworker(fsdnetwork):
 							))
 							print("before: ",p2pclient)
 							client_socket.send(p2pstring.encode())
+							#if p2pclient[key]['requesttype'] == '$CQ':
+								# -PRNA2014:NX2190
+							p2pPlaneReq = ('-MD{}:{}:P2P\r\n'.format(p2pclient[key]['fromCallsign'],p2pclient[key]['toCallsign']))
+							client_socket.send(p2pPlaneReq .encode())
+							print(p2pPlaneReq)
+
+
 							self.FSDp2ppool.UpdateRequests(key)
 							print("after: ",p2pclient)
 										
