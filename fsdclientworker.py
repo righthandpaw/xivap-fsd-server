@@ -37,7 +37,7 @@ class fsdclientworker(fsdnetwork):
 		regex = re
 		client=fsdclientinfo()
 		localRegistry = {}
-		
+		verified = False
 
 		i = 0
 		forever = True
@@ -47,7 +47,7 @@ class fsdclientworker(fsdnetwork):
 			
 			#if the messages gets appended we need to break them apart
 			sentences = message.split("\r\n")
-			print(sentences)
+			#print(sentences)
 			
 			for sentence in sentences:
 
@@ -56,60 +56,28 @@ class fsdclientworker(fsdnetwork):
 
 				if not request:
 					#if was verified we have to remove the client from the pool
-					if client.GetVerification() == True:
-						self.FSDregistry.UpdateRegistry(client,'delete')
+					#if client.GetVerification() == True:
+					#	self.FSDregistry.UpdateRegistry(client,'delete')
 					forever = False
-				
+
+
 				#Add a pilot
 				#APAAAA:SERVER:XP210:PASSWORD:11:B:14:FULL NAME ICAO
 				#  0      1      2     3       4 5  6  7
 				if regex.match(self.FSDprotocol.FSDAddPilot(),command):
 					client = self.FSDapi.AddPilot(words,client_socket,client,self.FSDregistry)
+
 					if client.GetVerification() == True:
 						self.FSDregistry.UpdateRegistry(client)
 
-						motds = {	"Python FSD Flight server\r\n",
-									"Based on Open XIVAP Protocol\r\n",
-									"Enjoy your flight!\r\n",
+						motds = {	"Python FSD Flight server",
+									"Based on Open XIVAP Protocol",
+									"Enjoy your flight!",
 								}
 						for motd in motds:
 							string = ("#TMserver:{}:{}\r\n".format(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()),motd)) 
 							client_socket.send(string.encode())
-
-
-						#if a new pilot happens to come on board we need to add them 
-						if len(self.FSDregistry.GetRegistryKeys())-1 >= len(localRegistry):
-							for key in self.FSDregistry.GetRegistryKeys():
-								if key is not self.FSDregistry.GetMyID():
-									if key not in localRegistry:
-										print("Adding pilotID = ",key)
-										localRegistry[key]={
-											"callsign":self.FSDregistry.GetCallSign(key)
-										}
-										addOtherPilotstr = (	
-											"#AP{}:{}:{}::{}:{}:{}\r\n".format(
-								
-											self.FSDregistry.GetCallSign(key),
-											'SERVER',
-											key,
-											self.FSDregistry.GetRank(key),
-											self.FSDregistry.GetFsdVer(key),
-											self.FSDregistry.GetSimVer(key),
-										))
-										client_socket.send(addOtherPilotstr.encode())
-										#we also need what they are flying in too
-
-										addOtherPlaneInfo = (
-											"-PD{}:*P:{}\r\n".format(
-												self.FSDregistry.GetCallSign(key),
-												self.FSDregistry.GetAirPlane(key)
-											))
-										client_socket.send(addOtherPlaneInfo.encode())
-
-
-					###############################################
-
-
+							verified = True
 
 					else:
 						string = ("#TMserver::Callsign or Username already in use!\r\n")
@@ -120,7 +88,7 @@ class fsdclientworker(fsdnetwork):
 				# INBOUND:  #DPNX2190
 				# OUTBOUND: #DPNX2190:XP10269
 				if regex.match(self.FSDprotocol.FSDDeletePilot(),command):
-					self.FSDregistry.UpdateRegistry(client,'delete')
+					#self.FSDregistry.UpdateRegistry(client,'delete')
 					forever = False
 
 				#Plane Info
@@ -129,17 +97,8 @@ class fsdclientworker(fsdnetwork):
 				if regex.match(self.FSDprotocol.FSDPlaneInfo(),command):	
 					client = self.FSDapi.PlaneInfo(words,client)
 					self.FSDregistry.UpdateRegistry(client)	
-					for otherUserID in self.FSDregistry.GetRegistryKeys():
-						if otherUserID is not self.FSDregistry.GetMyID():
-							sendPD = ("-PD{}:*P:{}\r\n".format(
-									self.FSDregistry.GetCallSign(otherUserID),
-									self.FSDregistry.GetAirPlane(otherUserID)
-							
-							))
 
-							client_socket.send(sendPD.encode())
-							print(sendPD)
-				
+
 				#Plane Params 
 				if regex.match(self.FSDprotocol.FSDPlaneParams(),command):
 					client = self.FSDapi.PlaneParam(words,client)
@@ -165,9 +124,7 @@ class fsdclientworker(fsdnetwork):
 				if regex.match('\\'+self.FSDprotocol.FSDInfoReply(),command):
 					p2pstr = ("{}\r\n".format(sentence))
 					self.FSDp2ppool.AddRequests(words)
-					
 
-				
 						
 				#Pilot Position
 				#example we recieve the following string the our client:
@@ -178,6 +135,34 @@ class fsdclientworker(fsdnetwork):
 					#we update our client's position in the global registry
 					self.FSDregistry.UpdateRegistry(client)
 
+					#Next we need to have the server query the global registry 
+					#and send us everyone's position 
+					for otherUserID in self.FSDregistry.GetRegistryKeys():
+						#except ourselve's ofcourse
+						if otherUserID is not self.FSDregistry.GetMyID():
+
+							#format
+							#@S:DIROB11:1554:11:43.76123:-99.31627:1695:0:4261416526:-84
+
+							Posstr = (	"@{}:{}:{}:{}:{}:{}:{}:{}:{}:{}\r\n".format(
+									self.FSDregistry.GetIdent(otherUserID),
+									self.FSDregistry.GetCallSign(otherUserID),
+									self.FSDregistry.GetTransponder(otherUserID),
+									self.FSDregistry.GetRating(otherUserID),
+									self.FSDregistry.GetLatitude(otherUserID),
+									self.FSDregistry.GetLongitude(otherUserID),
+									self.FSDregistry.GetTrueAlt(otherUserID),
+									self.FSDregistry.GetSpeed(otherUserID),
+									self.FSDregistry.GetPitchBankHeading(otherUserID),
+									self.FSDregistry.GetGround(otherUserID)
+							))
+							
+							#but whatever's were gona send this just to see what happens
+							client_socket.send(Posstr.encode())
+
+
+				
+					print(self.FSDregistry.GetMyID())
 					#if a new pilot happens to come on board we need to add them 
 					if len(self.FSDregistry.GetRegistryKeys())-1 >= len(localRegistry):
 						for key in self.FSDregistry.GetRegistryKeys():
@@ -219,36 +204,10 @@ class fsdclientworker(fsdnetwork):
 									print(delPilotStr)
 									client_socket.send(delPilotStr.encode())
 									localRegistry.pop(key,None)
-					
 
 
-					#Next we need to have the server query the global registry 
-					#and send us everyone's position 
-					for otherUserID in self.FSDregistry.GetRegistryKeys():
-						#except ourselve's ofcourse
-						if otherUserID is not self.FSDregistry.GetMyID():
-
-							#format
-							#@S:DIROB11:1554:11:43.76123:-99.31627:1695:0:4261416526:-84
-
-							Posstr = (	"@{}:{}:{}:{}:{}:{}:{}:{}:{}:{}\r\n".format(
-									self.FSDregistry.GetIdent(otherUserID),
-									self.FSDregistry.GetCallSign(otherUserID),
-									self.FSDregistry.GetTransponder(otherUserID),
-									self.FSDregistry.GetRating(otherUserID),
-									self.FSDregistry.GetLatitude(otherUserID),
-									self.FSDregistry.GetLongitude(otherUserID),
-									self.FSDregistry.GetTrueAlt(otherUserID),
-									self.FSDregistry.GetSpeed(otherUserID),
-									self.FSDregistry.GetPitchBankHeading(otherUserID),
-									self.FSDregistry.GetGround(otherUserID)
-							))
-							
-							#but whatever's were gona send this just to see what happens
-							client_socket.send(Posstr.encode())
-					
+	
 					##DO The p2p stuff here
-					
 					p2pclient = self.FSDp2ppool.GetRequests(self.FSDregistry.GetCallSign(self.FSDregistry.GetMyID()))
 					for key in p2pclient:
 						if p2pclient[key]['status'] == 'pending':
@@ -263,26 +222,17 @@ class fsdclientworker(fsdnetwork):
 								p2pclient[key]['privateip'],
 								p2pclient[key]['privateport']
 							))
-							print("before: ",p2pclient)
+							print("before: ",p2pstring)
 							client_socket.send(p2pstring.encode())
-							#if p2pclient[key]['requesttype'] == '$CQ':
-								# -PRNA2014:NX2190
 							p2pPlaneReq = ('-MD{}:{}:P2P\r\n'.format(p2pclient[key]['fromCallsign'],p2pclient[key]['toCallsign']))
 							client_socket.send(p2pPlaneReq .encode())
 							print(p2pPlaneReq)
-
-
 							self.FSDp2ppool.UpdateRequests(key)
-							print("after: ",p2pclient)
-										
-		#Remove pilot
-		#if client.GetError()[error]
-		#if client.GetVerification() == True:
-		#self.FSDp2ppool.ClearPool()
-		#print(self.FSDregistry.GetMyID())
-		#self.FSDregistry.DeleteKey(self.FSDregistry.GetMyID())
-			
+							print("after: ",p2pstring)
 
+
+		if verified == True:		
+			self.FSDregistry.UpdateRegistry(client,'delete')
 		#close connection		
 		client_socket.close()
 		#clean up the Registry	
